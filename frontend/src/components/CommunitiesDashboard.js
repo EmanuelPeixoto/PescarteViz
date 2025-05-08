@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
-import { fetchComunidadesSummary } from '../services/communitiesApi';
+import { fetchComunidadesSummary, fetchComunidadesByMunicipio } from '../services/communitiesApi';
 
 // Register ChartJS components
 ChartJS.register(
@@ -18,24 +18,33 @@ const CommunitiesDashboard = () => {
   const [communitiesData, setCommunitiesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedMunicipio, setSelectedMunicipio] = useState(null);
+  const [communitiesList, setCommunitiesList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCriteria, setFilterCriteria] = useState({
+    minPopulation: '',
+    maxPopulation: '',
+    minFishermen: '',
+    maxFishermen: ''
+  });
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         const data = await fetchComunidadesSummary();
-        console.log("Received data:", data); // Debug log
+        console.log("Dados recebidos:", data); // Debug log
 
         if (!data || data.length === 0) {
-          setError('No community data available');
+          setError('Não há dados de comunidades disponíveis');
         } else {
           setCommunitiesData(data);
         }
 
         setLoading(false);
       } catch (err) {
-        console.error("Dashboard error:", err);
-        setError(`Failed to load community data: ${err.message}`);
+        console.error("Erro do Dashboard:", err);
+        setError(`Falha ao carregar dados das comunidades: ${err.message}`);
         setLoading(false);
       }
     };
@@ -43,7 +52,47 @@ const CommunitiesDashboard = () => {
     loadData();
   }, []);
 
-  // Data for municipality comparison bar chart
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      if (!selectedMunicipio) return;
+
+      try {
+        const data = await fetchComunidadesByMunicipio(selectedMunicipio);
+        setCommunitiesList(data);
+      } catch (err) {
+        console.error("Erro ao buscar lista de comunidades:", err);
+      }
+    };
+
+    fetchCommunities();
+  }, [selectedMunicipio]);
+
+  const handleMunicipioSelect = (municipio) => {
+    const municipioId = communitiesData.find(m => m.municipio === municipio)?.id;
+    setSelectedMunicipio(municipioId);
+  };
+
+  // Função de filtro
+  const filteredCommunities = communitiesList.filter(community => {
+    // Busca por nome
+    if (searchTerm && !community.nome.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+
+    // Filtro por população
+    if (filterCriteria.minPopulation && community.pessoas < parseInt(filterCriteria.minPopulation)) {
+      return false;
+    }
+    if (filterCriteria.maxPopulation && community.pessoas > parseInt(filterCriteria.maxPopulation)) {
+      return false;
+    }
+
+    // Mais filtros conforme necessário
+
+    return true;
+  });
+
+  // Dados para gráfico de barras comparativo de municípios
   const municipalityBarData = {
     labels: communitiesData.map(item => item.municipio),
     datasets: [
@@ -64,7 +113,7 @@ const CommunitiesDashboard = () => {
     ],
   };
 
-  // Data for fishermen percentage pie chart
+  // Dados para gráfico de pizza de percentual de pescadores
   const fishermanPieData = {
     labels: communitiesData.map(item => item.municipio),
     datasets: [
@@ -86,7 +135,7 @@ const CommunitiesDashboard = () => {
     ],
   };
 
-  // Chart options
+  // Opções do gráfico
   const barOptions = {
     responsive: true,
     plugins: {
@@ -113,11 +162,11 @@ const CommunitiesDashboard = () => {
     },
   };
 
-  if (loading) return <div>Carregando dados das comunidades...</div>;
+  if (loading) return <div className="loading">Carregando dados das comunidades...</div>;
   if (error) return (
     <div className="dashboard">
       <h1>Painel das Comunidades de Pesca</h1>
-      <div className="error-container" style={{padding: "20px", backgroundColor: "#ffdddd", borderRadius: "5px", margin: "20px 0"}}>
+      <div className="error-container">
         <h2>Erro ao carregar dados</h2>
         <p>{error}</p>
         <p>Verifique se o servidor backend está funcionando corretamente.</p>
@@ -128,6 +177,21 @@ const CommunitiesDashboard = () => {
   return (
     <div className="dashboard">
       <h1>Painel das Comunidades de Pesca</h1>
+
+      <div className="municipality-selector">
+        <h2>Selecionar Município</h2>
+        <div className="buttons-group">
+          {communitiesData.map((item) => (
+            <button
+              key={item.municipio}
+              onClick={() => handleMunicipioSelect(item.municipio)}
+              className={selectedMunicipio === item.id ? 'active' : ''}
+            >
+              {item.municipio}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="dashboard-grid">
         <div className="chart-container">

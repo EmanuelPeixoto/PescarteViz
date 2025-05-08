@@ -6,6 +6,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+# Install required packages
+RUN npm install bcryptjs jsonwebtoken
+
+# Install COMPATIBLE versions of react-leaflet and leaflet
+# Use versions that are compatible with React 18
+RUN npm install leaflet@1.9.4
+RUN npm install react-leaflet@4.2.1 --legacy-peer-deps
+
 # Create the React app structure if it doesn't exist
 RUN npm install -g create-react-app
 RUN if [ ! -d "public" ]; then mkdir -p public; fi

@@ -1,43 +1,32 @@
 import axios from 'axios';
+import { fetchComunidadesSummary } from './communitiesApi';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-export const fetchSalesByCategory = async () => {
+// Adaptado para usar dados do PESCARTE em vez de vendas
+export const fetchPescarteOverview = async () => {
   try {
-    const response = await axios.get(`${API_URL}/sales/by-category`);
-    return response.data;
+    // Reutilizamos a função existente para dados de comunidades
+    return await fetchComunidadesSummary();
   } catch (error) {
-    console.error('Error fetching sales by category:', error);
+    console.error('Erro ao buscar visão geral do PESCARTE:', error);
     throw error;
   }
+};
+
+// Manter métodos existentes para compatibilidade
+export const fetchSalesByCategory = async () => {
+  return fetchPescarteOverview();
 };
 
 export const fetchMonthlySales = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/sales/monthly`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching monthly sales:', error);
-    throw error;
-  }
+  return fetchPescarteOverview();
 };
 
 export const fetchProductInventory = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/products/inventory`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching product inventory:', error);
-    throw error;
-  }
+  return fetchPescarteOverview();
 };
 
 export const fetchRecentSales = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/sales/recent`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching recent sales:', error);
-    throw error;
-  }
+  return fetchPescarteOverview();
 };

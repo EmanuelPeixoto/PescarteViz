@@ -1,6 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const multer = require('multer');
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
+const xlsx = require('xlsx'); // Added xlsx module
+const swaggerJsdoc = require('swagger-jsdoc'); // Added swagger-jsdoc module
+const swaggerUi = require('swagger-ui-express'); // Added swagger-ui-express module
 
 // Initialize Express app
 const app = express();
@@ -9,6 +16,12 @@ const port = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Configure multer for file upload
+const upload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Database connection
 const pool = new Pool({
@@ -48,6 +61,27 @@ const testDBConnection = async (retries = 5, delay = 5000) => {
 };
 
 testDBConnection();
+
+// Swagger setup
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Fishing Communities API',
+      version: '1.0.0',
+      description: 'API for managing fishing community data',
+    },
+    servers: [
+      {
+        url: `http://localhost:${port}/api`,
+      },
+    ],
+  },
+  apis: ['./server.js'], // Path to the API docs
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // API Routes
 
@@ -192,6 +226,86 @@ app.post('/api/upload/csv', async (req, res) => {
   }
 });
 
+// Add API endpoint for CSV demographics data upload
+app.post('/api/upload/csv/demographics', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const { comunidadeId, dataType } = req.body;
+
+  if (!comunidadeId) {
+    return res.status(400).json({ error: 'Community ID is required' });
+  }
+
+  const results = [];
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Log the import start
+    const logResult = await client.query(
+      'INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id',
+      [req.file.originalname, 'processing', 0]
+    );
+    const logId = logResult.rows[0].id;
+
+    // Process CSV based on data type
+    fs.createReadStream(req.file.path)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          let recordsImported = 0;
+
+          for (const row of results) {
+            // Example for demographic data - adapt based on your CSV structure
+            await client.query(
+              `INSERT INTO demograficos
+               (comunidade_id, faixa_etaria, genero, cor, profissao, renda_mensal, quantidade)
+               VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+              [comunidadeId, row.faixa_etaria || null, row.genero || null, row.cor || null,
+               row.profissao || null, row.renda_mensal || null, row.quantidade || 0]
+            );
+            recordsImported++;
+          }
+
+          // Update the import log
+          await client.query(
+            'UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3',
+            ['completed', recordsImported, logId]
+          );
+
+          await client.query('COMMIT');
+
+          // Delete the uploaded file
+          fs.unlinkSync(req.file.path);
+
+          res.status(200).json({
+            message: 'CSV data imported successfully',
+            recordsImported
+          });
+        } catch (err) {
+          await client.query('ROLLBACK');
+          await client.query(
+            'UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3',
+            ['failed', err.message, logId]
+          );
+
+          console.error('Error processing CSV:', err);
+          res.status(500).json({ error: 'Failed to process CSV data' });
+        }
+      });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Database transaction error:', err);
+    res.status(500).json({ error: 'Server error during import' });
+  } finally {
+    client.release();
+  }
+});
+
 // Add debugging route to check database view
 app.get('/api/debug/view/comunidades_por_municipio', async (req, res) => {
   try {
@@ -226,6 +340,114 @@ app.get('/api/debug/view/comunidades_por_municipio', async (req, res) => {
   } catch (error) {
     console.error('Error in debug route:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Export endpoint for community data
+app.get('/api/export/community/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Fetch community data with demographic information
+    const communityResult = await pool.query(
+      `SELECT c.*, m.nome as municipio_nome
+       FROM comunidades c
+       JOIN municipios m ON c.municipio_id = m.id
+       WHERE c.id = $1`,
+      [id]
+    );
+
+    const demographicsResult = await pool.query(
+      'SELECT * FROM demograficos WHERE comunidade_id = $1',
+      [id]
+    );
+
+    if (communityResult.rows.length === 0) {
+      return res.status(404).send('Community not found');
+    }
+
+    // Format data for export
+    const communityData = communityResult.rows[0];
+    const demographics = demographicsResult.rows;
+
+    // Create workbook with multiple sheets
+    const wb = xlsx.utils.book_new();
+
+    // Add basic info sheet
+    const basicInfoSheet = xlsx.utils.json_to_sheet([communityData]);
+    xlsx.utils.book_append_sheet(wb, basicInfoSheet, 'Basic Info');
+
+    // Add demographics sheet if data exists
+    if (demographics.length > 0) {
+      const demographicsSheet = xlsx.utils.json_to_sheet(demographics);
+      xlsx.utils.book_append_sheet(wb, demographicsSheet, 'Demographics');
+    }
+
+    // Generate Excel file
+    const excelBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+    // Set response headers
+    res.setHeader('Content-Disposition', `attachment; filename="community_${id}_data.xlsx"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    // Send the file
+    res.send(Buffer.from(excelBuffer));
+  } catch (error) {
+    console.error('Error exporting community data:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Get all fishing environments
+app.get('/api/ambientes-pesca', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM ambientes_pesca ORDER BY nome');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching fishing environments:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Create a new fishing environment
+app.post('/api/ambientes-pesca', async (req, res) => {
+  try {
+    const { nome, descricao } = req.body;
+
+    if (!nome) {
+      return res.status(400).json({ error: 'Environment name is required' });
+    }
+
+    const result = await pool.query(
+      'INSERT INTO ambientes_pesca (nome, descricao) VALUES ($1, $2) RETURNING *',
+      [nome, descricao || null]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating fishing environment:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Link a fishing environment to a community
+app.post('/api/comunidade-ambiente', async (req, res) => {
+  try {
+    const { comunidade_id, ambiente_id } = req.body;
+
+    if (!comunidade_id || !ambiente_id) {
+      return res.status(400).json({ error: 'Both community ID and environment ID are required' });
+    }
+
+    const result = await pool.query(
+      'INSERT INTO comunidade_ambiente (comunidade_id, ambiente_id) VALUES ($1, $2) RETURNING *',
+      [comunidade_id, ambiente_id]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error linking community and environment:', error);
+    res.status(500).send('Server error');
   }
 });
 
