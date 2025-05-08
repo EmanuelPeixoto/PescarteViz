@@ -1,0 +1,31 @@
+I want to use this real data in my project DB. What do you recommend I do? These data are usually from a CSV table, but I want them in the DB. What should I do? (Do I need to model the DB, or something like that?) Note: Scientists who are part of the project will want to add more CSV data to the DB over time. What should I do?
+The data can vary, e.g., faixa etária, cor, profissão, renda, ambiente de pesca, gênero, etc (generete more data if you think it is a good an ideia-Its a fishing commuuties project).
+
+
+Município de Campos dos Goytacazes
+Comunidade Pessoas Famílias Pescadores
+Coroa Grande 57 23 33
+Farol de São Tomé 849 305 455
+Lagoa de Cima 185 67 92
+Parque Prazeres 118 42 55
+Ponta Grossa dos Fidalgos 238 91 111
+Sant'Ana 66 22 27
+Tocos 137 39 51
+Total 1650 589 824
+
+Município de São Francisco de Itabapoana
+Comunidade Pessoas Famílias Pescadores
+Barra de Itabapoana 973 315 393
+Gargaú 1207 414 577
+Guaxindiba 622 209 256
+Lagoa Feia 246 80 125
+Total 3048 1018 1351
+
+Município de São João da Barra
+Comunidade Pessoas Famílias Pescadores
+Açú 274 115 127
+Atafona 786 277 310
+Barcelos 25 14 14
+Grussaí 45 17 19
+São João da Barra 143 59 62
+Total 1273 482 532

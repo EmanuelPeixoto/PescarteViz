@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: data-viz-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: datavizdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    mem_limit: 512m
+
+  # Express.js Backend
+  backend:
+    build: ./backend
+    container_name: data-viz-api
+    depends_on:
+      - postgres
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=admin
+      - DB_PASSWORD=password
+      - DB_NAME=datavizdb
+      - PORT=3001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/sales/by-category"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React Frontend
+  frontend:
+    build: ./frontend
+    container_name: data-viz-ui
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    mem_limit: 1g
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+
+volumes:
+  postgres_data:
