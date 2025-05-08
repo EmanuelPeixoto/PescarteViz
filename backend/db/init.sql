@@ -82,3 +82,111 @@ SELECT
 FROM sales
 GROUP BY year, month
 ORDER BY year, month;
+
+-- NEW FISHING COMMUNITIES DATABASE SCHEMA
+
+-- Municipalities table
+CREATE TABLE IF NOT EXISTS municipios (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Communities table
+CREATE TABLE IF NOT EXISTS comunidades (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    municipio_id INTEGER REFERENCES municipios(id),
+    pessoas INTEGER NOT NULL,
+    familias INTEGER NOT NULL,
+    pescadores INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Demographics data
+CREATE TABLE IF NOT EXISTS demograficos (
+    id SERIAL PRIMARY KEY,
+    comunidade_id INTEGER REFERENCES comunidades(id),
+    faixa_etaria VARCHAR(50),
+    genero VARCHAR(50),
+    cor VARCHAR(50),
+    profissao VARCHAR(100),
+    renda_mensal DECIMAL(10, 2),
+    quantidade INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Fishing environments
+CREATE TABLE IF NOT EXISTS ambientes_pesca (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Relationship between communities and fishing environments
+CREATE TABLE IF NOT EXISTS comunidade_ambiente (
+    id SERIAL PRIMARY KEY,
+    comunidade_id INTEGER REFERENCES comunidades(id),
+    ambiente_id INTEGER REFERENCES ambientes_pesca(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Data import logs (for tracking CSV imports)
+CREATE TABLE IF NOT EXISTS import_logs (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    import_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL,
+    records_imported INTEGER,
+    error_message TEXT
+);
+
+-- Insert municipalities
+INSERT INTO municipios (nome) VALUES
+    ('Campos dos Goytacazes'),
+    ('São Francisco de Itabapoana'),
+    ('São João da Barra');
+
+-- Insert Campos dos Goytacazes communities
+INSERT INTO comunidades (nome, municipio_id, pessoas, familias, pescadores) VALUES
+    ('Coroa Grande', 1, 57, 23, 33),
+    ('Farol de São Tomé', 1, 849, 305, 455),
+    ('Lagoa de Cima', 1, 185, 67, 92),
+    ('Parque Prazeres', 1, 118, 42, 55),
+    ('Ponta Grossa dos Fidalgos', 1, 238, 91, 111),
+    ('Sant''Ana', 1, 66, 22, 27),
+    ('Tocos', 1, 137, 39, 51);
+
+-- Insert São Francisco de Itabapoana communities
+INSERT INTO comunidades (nome, municipio_id, pessoas, familias, pescadores) VALUES
+    ('Barra de Itabapoana', 2, 973, 315, 393),
+    ('Gargaú', 2, 1207, 414, 577),
+    ('Guaxindiba', 2, 622, 209, 256),
+    ('Lagoa Feia', 2, 246, 80, 125);
+
+-- Insert São João da Barra communities
+INSERT INTO comunidades (nome, municipio_id, pessoas, familias, pescadores) VALUES
+    ('Açú', 3, 274, 115, 127),
+    ('Atafona', 3, 786, 277, 310),
+    ('Barcelos', 3, 25, 14, 14),
+    ('Grussaí', 3, 45, 17, 19),
+    ('São João da Barra', 3, 143, 59, 62);
+
+-- Create views for fishing communities data
+
+-- View for community summary by municipality
+CREATE VIEW comunidades_por_municipio AS
+SELECT
+    m.nome as municipio,
+    COUNT(c.id) as num_comunidades,
+    SUM(c.pessoas) as total_pessoas,
+    SUM(c.familias) as total_familias,
+    SUM(c.pescadores) as total_pescadores
+FROM municipios m
+JOIN comunidades c ON m.id = c.municipio_id
+GROUP BY m.nome;
