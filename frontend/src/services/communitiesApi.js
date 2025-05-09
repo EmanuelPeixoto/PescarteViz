@@ -41,3 +41,27 @@ export const fetchComunidadesSummary = async () => {
     throw error;
   }
 };
+
+export const fetchAllCommunities = async () => {
+  try {
+    // First get all municipalities
+    const municipios = await fetchMunicipios();
+
+    // Then fetch communities for each municipality
+    const allCommunities = [];
+    for (const municipio of municipios) {
+      const communities = await fetchComunidadesByMunicipio(municipio.id);
+      // Add municipality name to each community
+      const communitiesWithMunicName = communities.map(community => ({
+        ...community,
+        municipio_nome: municipio.nome
+      }));
+      allCommunities.push(...communitiesWithMunicName);
+    }
+
+    return allCommunities;
+  } catch (error) {
+    console.error('Error fetching all communities:', error);
+    throw error;
+  }
+};

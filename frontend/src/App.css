@@ -1,18 +1,48 @@
-/* Global Styles */
+/* Theme Variables */
 :root {
-  --primary-color: #004c99; /* Azul PESCARTE mais escuro */
-  --secondary-color: #0075c9; /* Azul PESCARTE */
-  --accent-color: #f58220; /* Laranja PESCARTE */
-  --text-color: #333333;
-  --light-bg: #f5f9ff; /* Fundo azulado claro */
-  --dark-bg: #003366; /* Azul escuro para o rodapé */
-  --white: #ffffff;
-  --light-gray: #f0f5fa;
-  --medium-gray: #e0e6f0;
+  /* Light Theme (default) */
+  --primary-color: #004c99;
+  --secondary-color: #0075c9;
+  --accent-color: #f58220;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --bg-primary: #f5f9ff;
+  --bg-secondary: #ffffff;
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --border-color: #e0e6f0;
+  --nav-bg: #ffffff;
+  --chart-grid: rgba(0, 0, 0, 0.1);
+  --chart-text: #333333;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
   --border-radius: 8px;
-  --box-shadow: 0 4px 12px rgba(0, 75, 153, 0.15);
 }
 
+/* Dark Theme */
+[data-theme='dark'] {
+  --primary-color: #0075c9;
+  --secondary-color: #004c99;
+  --accent-color: #ff9040;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --card-bg: #252525;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --border-color: #444444;
+  --nav-bg: #1a1a1a;
+  --chart-grid: rgba(255, 255, 255, 0.1);
+  --chart-text: #cccccc;
+  --success-color: #43a047;
+  --warning-color: #ffb300;
+  --danger-color: #e53935;
+}
+
+/* Global Styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -22,8 +52,9 @@
 body {
   font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
-  color: var(--text-color);
-  background-color: var(--light-bg);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .App {
@@ -34,43 +65,128 @@ body {
 
 /* Navigation Styles */
 .main-nav {
-  display: flex;
-  justify-content: center;
-  background-color: var(--primary-color);
-  padding: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 75, 153, 0.2);
+  background-color: var(--nav-bg);
+  box-shadow: var(--card-shadow);
+  padding: 0.5rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
 }
 
-.main-nav a {
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo-nav-section {
+  display: flex;
+  align-items: center;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.pescarte-logo {
+  height: 40px;
+  width: auto;
+  margin-right: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.logo-link:hover .pescarte-logo {
+  transform: scale(1.05);
+}
+
+.site-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+  width: 100%;
+}
+
+.nav-links a.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
   background-color: transparent;
   border: none;
-  color: var(--white);
-  padding: 0.75rem 1.5rem;
-  margin: 0 0.25rem;
-  font-size: 1rem;
-  font-weight: 500;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
-.main-nav a:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+.theme-toggle:hover {
+  background-color: rgba(128, 128, 128, 0.1);
 }
 
-.main-nav a.active {
-  background-color: rgba(255, 255, 255, 0.25);
-  border-bottom: 3px solid var(--accent-color);
-  font-weight: 600;
+.theme-toggle svg {
+  stroke: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .nav-links {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    justify-content: space-between;
+  }
 }
 
 /* Header Styles */
 .App-header {
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(0, 75, 153, 0.1);
+  box-shadow: var(--card-shadow);
 }
 
 .header-container {
@@ -92,11 +208,6 @@ body {
   align-items: center;
 }
 
-.pescarte-logo {
-  height: 70px;
-  width: auto;
-}
-
 .pescarte-logo-small {
   height: 50px;
   width: auto;
@@ -106,13 +217,13 @@ body {
 main {
   flex: 1;
   padding: 2rem;
-  background-color: var(--light-bg);
+  background-color: var(--bg-primary);
 }
 
 /* Footer Styles */
 footer {
   background-color: var(--primary-color);
-  color: var(--white);
+  color: var(--bg-secondary);
   position: relative;
   margin-top: 3rem;
   padding: 0;
@@ -187,7 +298,7 @@ footer {
 }
 
 .footer-links-column ul li a {
-  color: var(--white);
+  color: var(--bg-secondary);
   text-decoration: none;
   transition: all 0.2s ease;
 }
@@ -258,7 +369,7 @@ footer {
 .dashboard {
   max-width: 1200px;
   margin: 0 auto;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 2rem;
@@ -274,7 +385,7 @@ footer {
   margin-bottom: 2rem;
   color: var(--primary-color);
   font-weight: 600;
-  border-bottom: 2px solid var(--medium-gray);
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
@@ -292,15 +403,15 @@ footer {
 }
 
 .chart-container {
-  background-color: var(--white);
+  background: var(--card-bg);
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
   padding: 1.5rem;
   height: 400px;
   display: flex;
   flex-direction: column;
   border-top: 4px solid var(--secondary-color);
-  transition: transform 0.3s ease;
+  box-shadow: var(--card-shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .chart-container:hover {
@@ -311,9 +422,18 @@ footer {
   margin-bottom: 1rem;
 }
 
+/* Update chart scales for dark mode compatibility */
+.chartjs-scale-label {
+  color: var(--chart-text);
+}
+
+.chartjs-grid-line {
+  stroke: var(--chart-grid);
+}
+
 /* Table Styles */
 .table-container {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 1.5rem;
@@ -331,17 +451,17 @@ table {
 table th, table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid var(--medium-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 
 table th {
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   font-weight: bold;
   color: var(--primary-color);
 }
 
 table tr:hover {
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
 }
 
 /* Upload Form Styles */
@@ -349,7 +469,7 @@ table tr:hover {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
@@ -366,14 +486,14 @@ table tr:hover {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
-  color: var(--dark-bg);
+  color: var(--text-secondary);
 }
 
 .form-group select,
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--medium-gray);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.2s;
@@ -406,11 +526,11 @@ table tr:hover {
 
 .upload-button:hover,
 .download-template-button:hover {
-  background-color: var(--dark-bg);
+  background-color: var(--secondary-color);
 }
 
 .upload-button:disabled {
-  background-color: var(--medium-gray);
+  background-color: var(--border-color);
   cursor: not-allowed;
 }
 
@@ -421,22 +541,22 @@ table tr:hover {
 }
 
 .success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background-color: var(--success-color);
+  color: var(--bg-secondary);
+  border: 1px solid var(--success-color);
 }
 
 .error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: var(--danger-color);
+  color: var(--bg-secondary);
+  border: 1px solid var(--danger-color);
 }
 
 /* Community Details Styles */
 .community-details {
   max-width: 1200px;
   margin: 0 auto;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 2rem;
@@ -445,7 +565,7 @@ table tr:hover {
 .community-header {
   text-align: center;
   margin-bottom: 2rem;
-  border-bottom: 2px solid var(--medium-gray);
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
@@ -456,7 +576,7 @@ table tr:hover {
 }
 
 .community-header h2 {
-  color: var(--text-color);
+  color: var(--text-secondary);
   font-weight: normal;
   opacity: 0.8;
 }
@@ -469,7 +589,7 @@ table tr:hover {
 }
 
 .stat-card {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   padding: 1.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -506,12 +626,12 @@ table tr:hover {
 }
 
 .stat-subtitle {
-  color: var(--text-color);
+  color: var(--text-secondary);
   opacity: 0.7;
 }
 
 .demographic-charts {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   padding: 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -534,7 +654,7 @@ table tr:hover {
 
 .chart-wrapper {
   height: 300px;
-  border: 1px solid var(--light-gray);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 1rem;
 }
@@ -544,7 +664,7 @@ table tr:hover {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
@@ -554,14 +674,14 @@ table tr:hover {
   margin-bottom: 2rem;
   color: var(--primary-color);
   font-weight: 600;
-  border-bottom: 2px solid var(--medium-gray);
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
 .comparison-container h2 {
   margin: 1.5rem 0 1rem;
   color: var(--primary-color);
-  border-bottom: 1px solid var(--medium-gray);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.5rem;
   font-weight: 500;
 }
@@ -569,7 +689,7 @@ table tr:hover {
 .municipality-selector,
 .communities-selector {
   margin-bottom: 2rem;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   padding: 1.5rem;
   border-radius: var(--border-radius);
 }
@@ -580,7 +700,7 @@ table tr:hover {
   padding: 0.75rem;
   font-size: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--medium-gray);
+  border: 1px solid var(--border-color);
   transition: border-color 0.2s;
 }
 
@@ -598,10 +718,10 @@ table tr:hover {
 }
 
 .community-checkbox {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--medium-gray);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
 
@@ -616,17 +736,55 @@ table tr:hover {
   accent-color: var(--primary-color);
 }
 
-.comparison-charts .chart-container {
-  background-color: var(--white);
+.comparison-charts {
+  padding: 1.5rem;
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+}
+
+.comparison-charts .chart-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.comparison-charts .chart-container {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
   padding: 1.5rem;
-  height: 400px;
+  box-shadow: var(--card-shadow);
+  min-height: 450px; /* Increased height */
+  width: 100%; /* Full width */
+}
+
+.comparison-charts .chart-container h3 {
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.comparison-charts .chart-wrapper {
+  height: 400px; /* Much taller chart */
+  position: relative;
+}
+
+/* Responsive styles for larger screens */
+@media (min-width: 1200px) {
+  .comparison-charts .chart-container {
+    min-height: 500px;
+  }
+
+  .comparison-charts .chart-wrapper {
+    height: 450px;
+  }
 }
 
 .comparison-table {
   margin-top: 2rem;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 1.5rem;
@@ -642,10 +800,10 @@ table tr:hover {
 .instruction-message {
   text-align: center;
   padding: 2rem;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   border-radius: var(--border-radius);
   margin: 2rem 0;
-  color: var(--text-color);
+  color: var(--text-primary);
   border-left: 4px solid var(--secondary-color);
 }
 
@@ -658,10 +816,10 @@ table tr:hover {
 
 .error-message {
   padding: 1rem;
-  background-color: #ffe6e6;
-  border: 1px solid #ffcccc;
+  background-color: var(--danger-color);
+  border: 1px solid var(--danger-color);
   border-radius: var(--border-radius);
-  color: #d8000c;
+  color: var(--bg-secondary);
   margin-bottom: 1rem;
 }
 
@@ -673,7 +831,7 @@ table tr:hover {
 }
 
 .buttons-group button {
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   border: 1px solid var(--secondary-color);
   color: var(--primary-color);
   padding: 0.5rem 1rem;
@@ -683,12 +841,12 @@ table tr:hover {
 }
 
 .buttons-group button:hover {
-  background-color: var(--light-gray);
+  background-color: var(--bg-primary);
 }
 
 .buttons-group button.active {
   background-color: var(--secondary-color);
-  color: var(--white);
+  color: var(--bg-secondary);
 }
 
 /* Environment page styles */
@@ -696,7 +854,7 @@ table tr:hover {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
@@ -706,12 +864,12 @@ table tr:hover {
   margin-bottom: 2rem;
   color: var(--primary-color);
   font-weight: 600;
-  border-bottom: 2px solid var(--medium-gray);
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
 .environment-form {
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   padding: 1.5rem;
   border-radius: var(--border-radius);
   margin-bottom: 2rem;
@@ -719,7 +877,7 @@ table tr:hover {
 
 .submit-button {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--bg-secondary);
   border: none;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -730,11 +888,11 @@ table tr:hover {
 }
 
 .submit-button:hover {
-  background-color: var(--dark-bg);
+  background-color: var(--secondary-color);
 }
 
 .environments-list {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 1.5rem;
@@ -746,7 +904,7 @@ table tr:hover {
 .upload-instructions {
   margin-top: 2rem;
   padding: 1.5rem;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   border-radius: var(--border-radius);
   border-left: 4px solid var(--secondary-color);
 }
@@ -762,7 +920,7 @@ table tr:hover {
 
 .upload-instructions ul li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--medium-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .upload-instructions ul li:last-child {
@@ -801,7 +959,7 @@ table tr:hover {
 /* Melhorias visuais para cards e botões */
 .button-primary {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--bg-secondary);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
@@ -817,7 +975,7 @@ table tr:hover {
 }
 
 .button-secondary {
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   color: var(--primary-color);
   border: 2px solid var(--primary-color);
   padding: 0.7rem 1.5rem;
@@ -828,7 +986,7 @@ table tr:hover {
 }
 
 .button-secondary:hover {
-  background-color: var(--light-gray);
+  background-color: var(--bg-primary);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -866,7 +1024,7 @@ table tr:hover {
   display: flex;
   align-items: center;
   gap: 2rem;
-  background-color: var(--white);
+  background-color: var(--card-bg);
   padding: 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -898,7 +1056,7 @@ table tr:hover {
   font-size: 1.1rem;
   line-height: 1.6;
   text-align: justify;
-  color: var(--text-color);
+  color: var(--text-primary);
 }
 
 .pescarte-stats-overview {
@@ -910,7 +1068,7 @@ table tr:hover {
 
 .community-links-section {
   margin-top: 3rem;
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   padding: 2rem;
   border-radius: var(--border-radius);
 }
@@ -928,7 +1086,7 @@ table tr:hover {
 }
 
 .municipality-card {
-  background-color: var(--white);
+  background-color: var(--card-bg);
   padding: 1.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -989,6 +1147,431 @@ table tr:hover {
 
 /* For debugging chart containers */
 .chart-container .chart-wrapper {
-  border: 1px solid var(--light-gray);
+  border: 1px solid var(--border-color);
   padding: 10px;
+}
+
+/* Enhanced Communities Dashboard */
+
+.communities-dashboard {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.communities-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.selector-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.municipio-selector {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-width: 250px;
+  font-size: 1rem;
+}
+
+.filter-toggle {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.filter-toggle:hover {
+  background-color: var(--secondary-color);
+}
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.filter-options {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-selector {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-width: 250px;
+  font-size: 1rem;
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.chart-section {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.chart-wrapper {
+  height: 400px;
+  position: relative;
+}
+
+.communities-list h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.communities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.community-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.community-card:hover {
+  transform: translateY(-5px);
+}
+
+.community-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.3rem;
+}
+
+.community-stats {
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: bold;
+}
+
+.view-button {
+  text-align: center;
+  background-color: var(--accent-color);
+  color: var(--bg-secondary);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.view-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.municipalities-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.municipality-summary-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.municipality-summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.municipality-summary-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.municipality-stats {
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--bg-primary);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.select-municipality-button {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  margin-top: 0.5rem;
+}
+
+.select-municipality-button:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Advanced Analysis Styles */
+
+.advanced-analysis-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analysis-controls {
+  margin-bottom: 2rem;
+  background-color: var(--bg-primary);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.analysis-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.analysis-selector select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  min-width: 300px;
+}
+
+.analysis-container {
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.analysis-section {
+  margin-bottom: 2rem;
+}
+
+.analysis-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.analysis-header h2 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.analysis-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.stat-badge {
+  background-color: var(--bg-primary);
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stat-badge span:last-child {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.insight {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.chart-large-container {
+  height: 500px;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.analysis-interpretations {
+  background-color: var(--bg-primary);
+  padding: 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.analysis-interpretations h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.analysis-interpretations ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.analysis-interpretations li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.data-source-note {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 0.75rem;
+  border-left: 3px solid var(--accent-color);
+  background-color: rgba(var(--accent-rgb), 0.1);
+}
+
+@media (max-width: 768px) {
+  .analysis-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .chart-large-container {
+    height: 400px;
+  }
+}
+
+/* Map Styles */
+.map-container {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+}
+
+.empty-map {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg);
+}
+
+.map-placeholder {
+  text-align: center;
+  padding: 2rem;
+}
+
+.map-popup h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.map-popup p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+.view-details-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  background-color: var(--accent-color);
+  color: var(--bg-secondary);
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }

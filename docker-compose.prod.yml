@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - JWT_SECRET=pescarte-secure-key-production
+    depends_on:
+      - postgres
+    networks:
+      - pescarte-network
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pescarte-network
+
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_PASSWORD=secure_production_password
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=pescarte_prod
+    networks:
+      - pescarte-network
+
+networks:
+  pescarte-network:
+
+volumes:
+  postgres_data:

@@ -102,7 +102,10 @@ CREATE TABLE IF NOT EXISTS comunidades (
     familias INTEGER NOT NULL,
     pescadores INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    periodo_id INTEGER REFERENCES periodos_censo(id)
 );
 
 -- Demographics data
@@ -146,6 +149,14 @@ CREATE TABLE IF NOT EXISTS import_logs (
     error_message TEXT
 );
 
+-- Create a time dimension for historical analysis
+CREATE TABLE periodos_censo (
+    id SERIAL PRIMARY KEY,
+    ano INTEGER NOT NULL,
+    descricao VARCHAR(100),
+    is_current BOOLEAN DEFAULT false
+);
+
 -- Insert municipalities
 INSERT INTO municipios (nome) VALUES
     ('Campos dos Goytacazes'),
@@ -177,8 +188,13 @@ INSERT INTO comunidades (nome, municipio_id, pessoas, familias, pescadores) VALU
     ('Grussaí', 3, 45, 17, 19),
     ('São João da Barra', 3, 143, 59, 62);
 
--- Create views for fishing communities data
+-- Add coordinates for communities
+UPDATE comunidades SET latitude = -21.7545, longitude = -41.3244 WHERE nome = 'Farol de São Tomé';
+UPDATE comunidades SET latitude = -21.8238, longitude = -41.3247 WHERE nome = 'Lagoa de Cima';
+UPDATE comunidades SET latitude = -21.6434, longitude = -41.0499 WHERE nome = 'Gargaú';
+UPDATE comunidades SET latitude = -21.5083, longitude = -41.0309 WHERE nome = 'Atafona';
 
+-- Create views for fishing communities data
 -- View for community summary by municipality
 CREATE VIEW comunidades_por_municipio AS
 SELECT

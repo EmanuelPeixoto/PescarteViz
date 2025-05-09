@@ -142,6 +142,29 @@ app.get('/api/sales/recent', async (req, res) => {
 
 // NEW FISHING COMMUNITIES API ENDPOINTS
 
+/**
+ * @swagger
+ * /api/municipios:
+ *   get:
+ *     summary: Retrieves all municipalities
+ *     description: Returns a list of all municipalities in the database
+ *     responses:
+ *       200:
+ *         description: A list of municipalities
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: Municipality ID
+ *                   nome:
+ *                     type: string
+ *                     description: Municipality name
+ */
 // Get all municipalities
 app.get('/api/municipios', async (req, res) => {
   try {
@@ -398,6 +421,48 @@ app.get('/api/export/community/:id', async (req, res) => {
   }
 });
 
+// Export endpoint for municipality data
+app.get('/api/export/municipality/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const municipalityResult = await pool.query(
+      'SELECT * FROM municipios WHERE id = $1',
+      [id]
+    );
+
+    const communitiesResult = await pool.query(
+      'SELECT * FROM comunidades WHERE municipio_id = $1',
+      [id]
+    );
+
+    if (municipalityResult.rows.length === 0) {
+      return res.status(404).send('Municipality not found');
+    }
+
+    // Create workbook with municipality data
+    const wb = xlsx.utils.book_new();
+    const municipalitySheet = xlsx.utils.json_to_sheet([municipalityResult.rows[0]]);
+    xlsx.utils.book_append_sheet(wb, municipalitySheet, 'Municipality Info');
+
+    // Add communities sheet
+    const communitiesSheet = xlsx.utils.json_to_sheet(communitiesResult.rows);
+    xlsx.utils.book_append_sheet(wb, communitiesSheet, 'Communities');
+
+    // Generate Excel file
+    const excelBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+    // Set response headers
+    res.setHeader('Content-Disposition', `attachment; filename="municipality_${id}_data.xlsx"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    // Send the file
+    res.send(Buffer.from(excelBuffer));
+  } catch (error) {
+    console.error('Error exporting municipality data:', error);
+    res.status(500).send('Server error');
+  }
+});
+
 // Get all fishing environments
 app.get('/api/ambientes-pesca', async (req, res) => {
   try {
@@ -447,6 +512,48 @@ app.post('/api/comunidade-ambiente', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error linking community and environment:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Get time series data for a specific community
+app.get('/api/comunidades/timeseries/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // In a real scenario, you'd query historical data from your database
+    // Here we'll generate some sample data since your schema may not have historical tables yet
+
+    const communityResult = await pool.query(
+      'SELECT nome FROM comunidades WHERE id = $1',
+      [id]
+    );
+
+    if (communityResult.rows.length === 0) {
+      return res.status(404).send('Community not found');
+    }
+
+    const communityName = communityResult.rows[0].nome;
+
+    // Generate 5 years of sample data with slight variations
+    const currentYear = new Date().getFullYear();
+    const historicalData = [];
+
+    for (let i = 0; i < 5; i++) {
+      const year = currentYear - i;
+      const baseValue = 100 + i * 10; // Increasing base value for older years
+
+      historicalData.push({
+        ano: year,
+        pessoas: baseValue + Math.floor(Math.random() * 50),
+        pescadores: baseValue - 30 + Math.floor(Math.random() * 20),
+        familias: baseValue - 50 + Math.floor(Math.random() * 15)
+      });
+    }
+
+    res.json(historicalData);
+  } catch (error) {
+    console.error('Error fetching time series data:', error);
     res.status(500).send('Server error');
   }
 });

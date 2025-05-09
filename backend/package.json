@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "generate-data": "node scripts/generate-community-data.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -11,10 +11,11 @@ import {
   LineElement,
   PointElement
 } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
 import { fetchComunidadesSummary } from '../services/communitiesApi';
 import { Link } from 'react-router-dom';
 import pescarteLogoBlue from '../assets/pescarte_logo.svg';
+
+const LazyCharts = lazy(() => import('./ChartComponents'));
 
 // Register ChartJS components
 ChartJS.register(
@@ -149,17 +150,30 @@ const Dashboard = () => {
           const pescadores = parseInt(item.total_pescadores) || 0;
           return pessoas > 0 ? ((pescadores / pessoas) * 100).toFixed(1) : 0;
         }),
-        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-        borderColor: 'rgba(153, 102, 255, 1)',
+        backgroundColor: [
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+        ],
+        borderColor: [
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+        ],
         borderWidth: 1,
       }
     ],
   };
 
-  // Opções para os gráficos
+  // Enhanced bar chart options for better interpretation
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    indexAxis: 'y', // Horizontal bar charts for better label readability
     plugins: {
       legend: {
         position: 'top',
@@ -175,13 +189,56 @@ const Dashboard = () => {
       tooltip: {
         callbacks: {
           label: function(context) {
-            return `${context.dataset.label}: ${context.raw}`;
+            return `${context.dataset.label}: ${context.raw.toLocaleString('pt-BR')}`;
           }
+        },
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleFont: {
+          size: 14
+        },
+        bodyFont: {
+          size: 13
+        },
+        padding: 10,
+        cornerRadius: 4
+      },
+      datalabels: {
+        display: true,
+        align: 'end',
+        anchor: 'end',
+        color: '#333',
+        font: {
+          weight: 'bold'
         }
       }
     },
+    scales: {
+      x: {
+        stacked: false,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+          borderDash: [5, 5]
+        },
+        ticks: {
+          callback: function(value) {
+            return value.toLocaleString('pt-BR');
+          }
+        }
+      },
+      y: {
+        stacked: false,
+        grid: {
+          display: false
+        }
+      }
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuad'
+    }
   };
 
+  // Improved pie options with better data visualization techniques
   const pieOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -191,16 +248,56 @@ const Dashboard = () => {
         labels: {
           font: {
             size: 12
+          },
+          generateLabels: (chart) => {
+            const datasets = chart.data.datasets;
+            const labels = chart.data.labels;
+            const data = datasets[0].data;
+            const total = data.reduce((acc, val) => acc + parseFloat(val), 0);
+
+            return labels.map((label, i) => {
+              const value = data[i];
+              const percentage = ((value / total) * 100).toFixed(1);
+              return {
+                text: `${label} (${percentage}%)`,
+                fillStyle: datasets[0].backgroundColor[i],
+                strokeStyle: datasets[0].borderColor[i],
+                lineWidth: 1,
+                index: i
+              };
+            });
           }
-        }
+        },
+        onClick: null // Disable legend item clicking for better UX
       },
       tooltip: {
         callbacks: {
           label: function(context) {
-            return `${context.label}: ${context.raw} pescadores`;
+            const value = context.raw;
+            const total = context.dataset.data.reduce((acc, val) => acc + parseFloat(val), 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${value} (${percentage}%)`;
           }
         }
+      },
+      datalabels: {
+        display: true,
+        color: '#fff',
+        font: {
+          weight: 'bold',
+          size: 12
+        },
+        formatter: (value, ctx) => {
+          const total = ctx.dataset.data.reduce((acc, val) => acc + parseFloat(val), 0);
+          const percentage = ((value / total) * 100).toFixed(1);
+          return percentage + '%';
+        }
       }
+    },
+    cutout: '30%', // Creates a donut chart for better aesthetics
+    animation: {
+      animateRotate: true,
+      animateScale: true
     }
   };
 
@@ -218,12 +315,17 @@ const Dashboard = () => {
           />
         </div>
         <div className="pescarte-description">
-          <h1>Projeto PESCARTE</h1>
+          <h1>Monitoramento de Comunidades Pesqueiras</h1>
           <p className="slide-up">
-            O PESCARTE é um projeto de mitigação ambiental desenvolvido pela Universidade Federal Fluminense (UFF)
-            em parceria com a Petrobras. Seu objetivo é promover, fortalecer e aperfeiçoar a pesca artesanal nas
-            comunidades pesqueiras da Bacia de Campos e Espírito Santo, contribuindo para a sustentabilidade
-            socioeconômica e ambiental da atividade pesqueira na região.
+            O PESCARTE é um projeto de mitigação ambiental da UENF em parceria
+            com a Petrobras. Esta plataforma oferece ferramentas analíticas
+            interativas sobre as comunidades pesqueiras da Bacia de Campos e
+            Espírito Santo. Através de dashboards dinâmicos, é possível
+            visualizar estatísticas demográficas, comparar comunidades e gerar
+            relatórios personalizados. Nossa solução digital promove a
+            transparência de dados, apoia políticas públicas e fortalece a pesca
+            artesanal com visualizações geoespaciais e análises avançadas,
+            contribuindo para a sustentabilidade das comunidades pesqueiras.
           </p>
         </div>
       </div>
@@ -242,7 +344,9 @@ const Dashboard = () => {
         <div className="stat-card pulse">
           <h3>Pescadores</h3>
           <div className="stat-value">{pescarteStats.totalFishermen}</div>
-          <div className="stat-subtitle">{pescarteStats.averageFishermenPercentage}% da população</div>
+          <div className="stat-subtitle">
+            {pescarteStats.averageFishermenPercentage}% da população
+          </div>
         </div>
         <div className="stat-card pulse">
           <h3>População Total</h3>
@@ -251,28 +355,18 @@ const Dashboard = () => {
       </div>
 
       {chartReady && (
-        <div className="dashboard-grid">
-          <div className="chart-container">
-            <h2>Distribuição de Pescadores</h2>
-            <div className="chart-wrapper">
-              <Pie data={fishermenDistributionData} options={pieOptions} />
-            </div>
-          </div>
-
-          <div className="chart-container">
-            <h2>População por Município</h2>
-            <div className="chart-wrapper">
-              <Bar data={populationByMunicipalityData} options={chartOptions} />
-            </div>
-          </div>
-
-          <div className="chart-container">
-            <h2>Percentual de Pescadores</h2>
-            <div className="chart-wrapper">
-              <Bar data={fishermenPercentageData} options={chartOptions} />
-            </div>
-          </div>
-        </div>
+        <Suspense
+          fallback={<div className="loading">Carregando gráficos...</div>}>
+          <LazyCharts
+            data={{
+              fishermenDistributionData,
+              populationByMunicipalityData,
+              fishermenPercentageData,
+              chartOptions,
+              pieOptions,
+            }}
+          />
+        </Suspense>
       )}
 
       <div className="community-links-section">
@@ -282,11 +376,19 @@ const Dashboard = () => {
             <div key={index} className="municipality-card">
               <h3>{municipality.municipio}</h3>
               <div className="municipality-stats">
-                <p><strong>Comunidades:</strong> {municipality.num_comunidades}</p>
-                <p><strong>Pescadores:</strong> {municipality.total_pescadores}</p>
-                <p><strong>População Total:</strong> {municipality.total_pessoas}</p>
+                <p>
+                  <strong>Comunidades:</strong> {municipality.num_comunidades}
+                </p>
+                <p>
+                  <strong>Pescadores:</strong> {municipality.total_pescadores}
+                </p>
+                <p>
+                  <strong>População Total:</strong> {municipality.total_pessoas}
+                </p>
               </div>
-              <Link to="/communities" className="button-primary">Ver comunidades</Link>
+              <Link to="/communities" className="button-primary">
+                Ver comunidades
+              </Link>
             </div>
           ))}
         </div>
