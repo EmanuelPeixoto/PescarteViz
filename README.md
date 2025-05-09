@@ -2,7 +2,7 @@
 
 Este projeto foi desenvolvido para o monitoramento e visualização de dados de comunidades pesqueiras, em parceria com o Projeto PESCARTE. A aplicação permite visualizar e analisar dados socioeconômicos das comunidades pesqueiras da Bacia de Campos e Espírito Santo, contribuindo para a gestão e tomada de decisão do projeto.
 
-![Logo PESCARTE](https://pescarte.org.br/wp-content/uploads/2021/04/logo-pescarte.svg)
+![Logo PESCARTE](frontend\src\assets\pescarte_logo.png)
 
 ## Sobre o Projeto
 
