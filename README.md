@@ -54,7 +54,7 @@ Esta aplicação web fornece uma interface para visualização dos dados do CENS
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/seu-usuario/data-viz-project.git
+git clone https://github.com/ARRETdaniel/PescarteViz.git
 
 # Navegar até o diretório do projeto
 cd data-viz-project

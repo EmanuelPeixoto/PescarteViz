@@ -7,3 +7,6 @@ Make the Estatisticas Gerais the main Tipo de Analise when opening  analises ava
 Make the Comparar comunidades Graphs smaller, and improve it.
 
 !!!make project more modular
+
+
+when i click on 'Ver comunidades' ele redireciona. Mas nao para o topo da pagina.

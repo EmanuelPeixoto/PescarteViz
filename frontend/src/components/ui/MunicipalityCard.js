@@ -7,16 +7,28 @@ const MunicipalityCard = ({ municipality, onSelect }) => {
   const formattedFishermen = parseInt(municipality.total_pescadores).toLocaleString('pt-BR');
   const percentFishermen = ((parseInt(municipality.total_pescadores) / parseInt(municipality.total_pessoas)) * 100).toFixed(1);
 
+  // Split municipality name into words and check if it needs truncation
+  const municipalityNameWords = municipality.municipio.split(' ');
+  const municipalityDisplayName = municipalityNameWords.length > 10
+    ? municipalityNameWords.slice(0, 10).join(' ') + '...'
+    : municipality.municipio;
+
+  // Verificar o comprimento do nome do município e quantidade de comunidades
+  const communityLabel = municipality.municipio.length > 16
+    ? "c."
+    : (municipality.num_comunidades == 1 ? "comunidade" : "comunidades");
+
   return (
     <div className="municipality-card">
       <div className="municipality-header">
         <div className="municipality-title-container">
           <h3 className="municipality-title" title={municipality.municipio}>
-            {municipality.municipio}
+            {municipalityDisplayName}
           </h3>
         </div>
         <div className="community-count">
-          {municipality.num_comunidades} {municipality.num_comunidades === 1 ? 'comunidade' : 'comunidades'}
+          {municipality.num_comunidades}{" "}
+          {communityLabel}
         </div>
       </div>
 
@@ -52,8 +64,7 @@ const MunicipalityCard = ({ municipality, onSelect }) => {
           <button
             onClick={onSelect}
             className="view-communities-button"
-            aria-label={`Ver comunidades de ${municipality.municipio}`}
-          >
+            aria-label={`Ver comunidades de ${municipality.municipio}`}>
             Ver comunidades
             <span className="arrow-icon">→</span>
           </button>
@@ -61,8 +72,7 @@ const MunicipalityCard = ({ municipality, onSelect }) => {
           <Link
             to={`/communities?municipio=${municipality.municipio_id}`}
             className="view-communities-button"
-            aria-label={`Ver comunidades de ${municipality.municipio}`}
-          >
+            aria-label={`Ver comunidades de ${municipality.municipio}`}>
             Ver comunidades
             <span className="arrow-icon">→</span>
           </Link>
