@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAllCommunities } from '../services/communitiesApi';
 import axios from 'axios';
+import { handleApiError } from '../utils/errorHandler';
 import {
   Chart as ChartJS,
   LinearScale,
@@ -43,7 +44,7 @@ const AdvancedAnalysis = () => {
   const [predictionsData, setPredictionsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [analysisType, setAnalysisType] = useState('correlation');
+  const [analysisType, setAnalysisType] = useState('statistics');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,22 +52,40 @@ const AdvancedAnalysis = () => {
         setLoading(true);
 
         // Fetch all required data in parallel
-        const [communities, statistics, clusters, predictions] = await Promise.all([
-          fetchAllCommunities(),
-          axios.get(`${API_URL}/analytics/statistics`).then(res => res.data),
-          axios.get(`${API_URL}/analytics/clusters`).then(res => res.data),
-          axios.get(`${API_URL}/analytics/predictions`).then(res => res.data)
-        ]);
+        const communities = await fetchAllCommunities();
 
-        setCommunitiesData(communities);
+        // Use individual try-catch for each request to continue even if one fails
+        let statistics = null;
+        try {
+          statistics = await axios.get(`${API_URL}/analytics/statistics`).then(res => res.data);
+        } catch (err) {
+          console.error("Error fetching statistics:", err);
+        }
+
+        let clusters = null;
+        try {
+          clusters = await axios.get(`${API_URL}/analytics/clusters`).then(res => res.data);
+        } catch (err) {
+          console.error("Error fetching clusters:", err);
+        }
+
+        let predictions = null;
+        try {
+          predictions = await axios.get(`${API_URL}/analytics/predictions`).then(res => res.data);
+        } catch (err) {
+          console.error("Error fetching predictions:", err);
+        }
+
+        setCommunitiesData(communities || []);
         setStatisticsData(statistics);
         setClusterData(clusters);
         setPredictionsData(predictions);
         setLoading(false);
+        setAnalysisType('statistics');
       } catch (err) {
-        setError('Falha ao carregar dados para análise: ' + err.message);
+        const errorMsg = handleApiError(err);
+        setError('Falha ao carregar dados para análise: ' + errorMsg);
         setLoading(false);
-        console.error("Error fetching analytics data:", err);
       }
     };
 

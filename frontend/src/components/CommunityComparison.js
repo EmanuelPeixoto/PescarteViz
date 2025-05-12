@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { fetchCommunityDetails, fetchMunicipios, fetchComunidadesByMunicipio } from '../services/communitiesApi';
+import ChartContainer from './ui/ChartContainer';
 
 const CommunityComparison = () => {
   const [municipalities, setMunicipalities] = useState([]);
@@ -68,7 +69,8 @@ const CommunityComparison = () => {
         setLoading(false);
       } catch (err) {
         console.error("Erro ao buscar detalhes da comunidade:", err);
-        setError("Falha ao carregar detalhes da comunidade");
+        const errorMessage = err.response?.data?.error || err.message;
+        setError(`Falha ao carregar detalhes da comunidade: ${errorMessage}`);
         setLoading(false);
       }
     };
@@ -100,21 +102,51 @@ const CommunityComparison = () => {
   // Opções do gráfico
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Comparação de Comunidades',
-        font: {
-          size: 16
+        labels: {
+          boxWidth: 12,
+          font: {
+            size: 11
+          }
         }
       },
+      title: {
+        display: false // Remove title to save space
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.dataset.label || '';
+            const value = context.raw;
+            return `${label}: ${value.toLocaleString('pt-BR')}`;
+          }
+        }
+      }
     },
     scales: {
       y: {
-        beginAtZero: true
+        beginAtZero: true,
+        ticks: {
+          font: { size: 10 },
+          maxTicksLimit: 6
+        },
+        grid: {
+          display: true,
+          color: 'rgba(0, 0, 0, 0.05)'
+        }
+      },
+      x: {
+        ticks: {
+          font: { size: 10 },
+          maxRotation: 45,
+          minRotation: 45
+        },
+        grid: {
+          display: false
+        }
       }
     }
   };
@@ -208,18 +240,26 @@ const CommunityComparison = () => {
             <div>Carregando comunidades...</div>
           ) : communities.length > 0 ? (
             <div className="communities-grid">
-              {communities.map(community => (
-                <div key={community.id} className="community-checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={selectedCommunities.includes(community.id)}
-                      onChange={() => toggleCommunity(community.id)}
-                    />
-                    {community.nome} ({community.pescadores} pescadores / {community.pessoas} pessoas)
-                  </label>
-                </div>
-              ))}
+              {communities.map(community => {
+                // Add defensive checks for missing data
+                const pescadores = community.pescadores || 0;
+                const pessoas = community.pessoas || 0;
+
+                return (
+                  <div key={community.id} className="community-checkbox">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={selectedCommunities.includes(community.id)}
+                        onChange={() => toggleCommunity(community.id)}
+                      />
+                      {community.nome} {pescadores > 0 && pessoas > 0 ?
+                        `(${pescadores} pescadores / ${pessoas} pessoas)` :
+                        "(dados do censo indisponíveis)"}
+                    </label>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div>Nenhuma comunidade encontrada para este município</div>
@@ -233,32 +273,17 @@ const CommunityComparison = () => {
           <h2>3. Comparação de Comunidades</h2>
 
           <div className="chart-grid">
-            <div className="chart-container">
-              <h3>Comparação de População</h3>
-              {loading ? (
-                <div>Carregando dados do gráfico...</div>
-              ) : (
-                <Bar data={populationData} options={chartOptions} />
-              )}
-            </div>
+            <ChartContainer title="População Total" isLoading={loading}>
+              <Bar data={populationData} options={chartOptions} />
+            </ChartContainer>
 
-            <div className="chart-container">
-              <h3>Comparação de Famílias</h3>
-              {loading ? (
-                <div>Carregando dados do gráfico...</div>
-              ) : (
-                <Bar data={familiesData} options={chartOptions} />
-              )}
-            </div>
+            <ChartContainer title="Famílias" isLoading={loading}>
+              <Bar data={familiesData} options={chartOptions} />
+            </ChartContainer>
 
-            <div className="chart-container">
-              <h3>Percentual de Pescadores</h3>
-              {loading ? (
-                <div>Carregando dados do gráfico...</div>
-              ) : (
-                <Bar data={percentageData} options={chartOptions} />
-              )}
-            </div>
+            <ChartContainer title="Percentual de Pescadores" isLoading={loading}>
+              <Bar data={percentageData} options={chartOptions} />
+            </ChartContainer>
           </div>
 
           {/* Tabela de dados */}

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { fetchMunicipios, fetchComunidadesByMunicipio, fetchComunidadesSummary } from '../services/communitiesApi';
+import { Bar, Pie } from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
+import { fetchMunicipios, fetchComunidadesByMunicipio, fetchComunidadesSummary } from '../services/communitiesApi';
+import pescarteLogoBlue from '../assets/pescarte_logo.svg';
+import MunicipalityCard from './ui/MunicipalityCard';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -11,7 +14,6 @@ import {
   BarElement,
   Title
 } from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
 
 // Register ChartJS components
 ChartJS.register(
@@ -240,59 +242,84 @@ const CommunitiesDashboard = () => {
   };
 
   return (
-    <div className="communities-dashboard">
-      <h1>Comunidades Pesqueiras</h1>
-
-      <div className="communities-controls">
-        <div className="selector-container">
-          <label htmlFor="municipio-select">Selecionar Município:</label>
-          <select
-            id="municipio-select"
-            value={selectedMunicipio}
-            onChange={handleMunicipioChange}
-            className="municipio-selector"
-          >
-            <option value="">Todos os municípios</option>
-            {municipios.map(municipio => (
-              <option key={municipio.id} value={municipio.id}>
-                {municipio.nome}
-              </option>
-            ))}
-          </select>
+    <div className="dashboard fade-in">
+      {/* Add the styled header consistent with Dashboard */}
+      <div className="pescarte-info-header">
+        <div className="pescarte-logo-container">
+          <img
+            src={pescarteLogoBlue}
+            alt="Logo PESCARTE"
+            className="pescarte-logo-large"
+          />
         </div>
-
-        <button className="filter-toggle" onClick={toggleFilters}>
-          {showFilters ? 'Esconder Filtros' : 'Mostrar Filtros'}
-        </button>
+        <div className="pescarte-description">
+          <h1>Comunidades Pesqueiras</h1>
+          <p className="slide-up">
+            Explore os dados das comunidades pesqueiras registradas no projeto PESCARTE.
+            Visualize estatísticas por município, acesse detalhes de comunidades específicas
+            e compare indicadores importantes como população, número de pescadores, e percentual
+            de dependência da pesca em cada localidade.
+          </p>
+        </div>
       </div>
 
-      {showFilters && (
-        <div className="filter-container">
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Buscar comunidade..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="search-input"
-            />
-          </div>
+      <div className="wave-divider"></div>
 
-          <div className="filter-options">
-            <label htmlFor="filter-select">Filtrar por:</label>
+      {/* Enhanced communities controls with styled selectors */}
+      <div className="communities-controls-container">
+        <div className="controls-header">
+          <h2>Visualizar por Município</h2>
+          <div className="selector-container">
             <select
-              id="filter-select"
-              value={filterCriteria}
-              onChange={handleFilterChange}
-              className="filter-selector"
+              id="municipio-select"
+              value={selectedMunicipio}
+              onChange={handleMunicipioChange}
+              className="styled-select"
             >
-              <option value="all">Todas comunidades</option>
-              <option value="high_fishermen">Alto percentual de pescadores (>25%)</option>
-              <option value="large_population">População grande (>1500)</option>
+              <option value="">Todos os municípios</option>
+              {municipios.map(municipio => (
+                <option key={municipio.id} value={municipio.id}>
+                  {municipio.nome}
+                </option>
+              ))}
             </select>
+
+            <button className="filter-button" onClick={toggleFilters}>
+              <span className="icon-filter"></span>
+              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Animated filter panel */}
+        {showFilters && (
+          <div className="filter-panel slide-down">
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Buscar comunidade..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="search-input"
+              />
+            </div>
+
+            <div className="filter-options">
+              <label htmlFor="filter-select">Filtrar por:</label>
+              <select
+                id="filter-select"
+                value={filterCriteria}
+                onChange={handleFilterChange}
+                className="filter-selector"
+              >
+                <option value="all">Todas comunidades</option>
+                <option value="high_fishermen">Alto percentual de pescadores (>25%)</option>
+                <option value="large_population">População grande (>1500)</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
 
       {loading ? (
         <div className="loading">Carregando dados...</div>
@@ -300,113 +327,138 @@ const CommunitiesDashboard = () => {
         <div className="error-message">{error}</div>
       ) : (
         <>
-          <div className="charts-container">
-            {selectedMunicipio ? (
-              <>
-                <div className="chart-section">
-                  <h2>População e Pescadores por Comunidade</h2>
-                  <div className="chart-wrapper">
-                    <Bar data={communityChartData} options={chartOptions} />
-                  </div>
-                </div>
-
-                <div className="chart-section">
-                  <h2>Percentual de Pescadores por Comunidade</h2>
-                  <div className="chart-wrapper">
-                    <Pie data={fishermenPercentageData} options={pieOptions} />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="chart-section full-width">
-                <h2>Visão Geral dos Municípios</h2>
-                <div className="chart-wrapper">
-                  <Bar data={municipalityOverviewData} options={chartOptions} />
-                </div>
+          {/* Chart section with consistent styling */}
+          <div className="chart-section-wrapper">
+            <div className="chart-section">
+              <h2>{selectedMunicipio ?
+                `Dados de ${municipios.find(m => m.id === parseInt(selectedMunicipio))?.nome || ''}` :
+                'Visão Geral dos Municípios'}
+              </h2>
+              <div className="chart-wrapper">
+                {selectedMunicipio ? (
+                  <Bar data={communityChartData} options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: 'top' },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            return `${context.dataset.label}: ${context.raw.toLocaleString('pt-BR')}`;
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          callback: function(value) {
+                            return value.toLocaleString('pt-BR');
+                          }
+                        }
+                      },
+                      x: {
+                        ticks: {
+                          autoSkip: true,
+                          maxRotation: 45,
+                          minRotation: 45
+                        }
+                      }
+                    }
+                  }} />
+                ) : (
+                  <Bar data={municipalityOverviewData} options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: 'top' },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            return `${context.dataset.label}: ${context.raw.toLocaleString('pt-BR')}`;
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          callback: function(value) {
+                            return value.toLocaleString('pt-BR');
+                          }
+                        }
+                      }
+                    }
+                  }} />
+                )}
               </div>
-            )}
+            </div>
           </div>
 
-          <div className="communities-list">
+          {/* Municipality cards section */}
+          <div className="municipalities-section">
             <h2>
-              {selectedMunicipio
-                ? `Comunidades em ${municipios.find(m => m.id === parseInt(selectedMunicipio))?.nome || ''}`
-                : 'Selecione um município para ver suas comunidades'}
+              {selectedMunicipio ?
+                `Comunidades em ${municipios.find(m => m.id === parseInt(selectedMunicipio))?.nome || ''}` :
+                'Selecione um município para ver suas comunidades'}
             </h2>
 
-            {selectedMunicipio && communitiesList.length > 0 ? (
-              <div className="communities-grid">
-                {communitiesList.map(community => (
-                  <div key={community.id} className="community-card">
-                    <h3>{community.nome}</h3>
-                    <div className="community-stats">
-                      <div className="stat-item">
-                        <span className="stat-label">População:</span>
-                        <span className="stat-value">{community.pessoas.toLocaleString('pt-BR')}</span>
+            {selectedMunicipio ? (
+              communitiesList.length > 0 ? (
+                <div className="communities-grid">
+                  {filteredCommunities.map(community => (
+                    <div key={community.id} className="community-card">
+                      <h3>{community.nome}</h3>
+                      <div className="community-stats">
+                        <div className="stat-row">
+                          <div className="stat-icon">👥</div>
+                          <div className="stat-details">
+                            <span className="stat-label">População:</span>
+                            <span className="stat-value">{community.pessoas.toLocaleString('pt-BR')}</span>
+                          </div>
+                        </div>
+                        <div className="stat-row">
+                          <div className="stat-icon">🎣</div>
+                          <div className="stat-details">
+                            <span className="stat-label">Pescadores:</span>
+                            <span className="stat-value">{community.pescadores.toLocaleString('pt-BR')}</span>
+                          </div>
+                        </div>
+                        <div className="stat-row">
+                          <div className="stat-icon">📊</div>
+                          <div className="stat-details">
+                            <span className="stat-label">% Pescadores:</span>
+                            <span className="stat-value">
+                              {((community.pescadores / community.pessoas) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="stat-item">
-                        <span className="stat-label">Pescadores:</span>
-                        <span className="stat-value">{community.pescadores.toLocaleString('pt-BR')}</span>
-                      </div>
-                      <div className="stat-item">
-                        <span className="stat-label">% Pescadores:</span>
-                        <span className="stat-value">
-                          {((community.pescadores / community.pessoas) * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="stat-item">
-                        <span className="stat-label">Famílias:</span>
-                        <span className="stat-value">{community.familias.toLocaleString('pt-BR')}</span>
-                      </div>
+                      <Link to={`/community/${community.id}`} className="view-communities-button">
+                        Ver detalhes
+                        <span className="arrow-icon">→</span>
+                      </Link>
                     </div>
-                    <Link to={`/community/${community.id}`} className="view-button">
-                      Ver detalhes
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            ) : selectedMunicipio ? (
-              <div className="no-data-message">
-                Nenhuma comunidade encontrada para este município.
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-data-message">
+                  Nenhuma comunidade encontrada para este município.
+                </div>
+              )
             ) : (
-              <div className="municipalities-overview">
-                {communitiesData.map((municipalityData, index) => (
-                  <div key={index} className="municipality-summary-card">
-                    <h3>{municipalityData.municipio}</h3>
-                    <div className="municipality-stats">
-                      <div className="stat-row">
-                        <span>Comunidades:</span>
-                        <span>{municipalityData.num_comunidades}</span>
-                      </div>
-                      <div className="stat-row">
-                        <span>Pescadores:</span>
-                        <span>{parseInt(municipalityData.total_pescadores).toLocaleString('pt-BR')}</span>
-                      </div>
-                      <div className="stat-row">
-                        <span>População:</span>
-                        <span>{parseInt(municipalityData.total_pessoas).toLocaleString('pt-BR')}</span>
-                      </div>
-                      <div className="stat-row">
-                        <span>% Pescadores:</span>
-                        <span>
-                          {(parseInt(municipalityData.total_pescadores) / parseInt(municipalityData.total_pessoas) * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      className="select-municipality-button"
-                      onClick={() => {
-                        const municipio = municipios.find(m => m.nome === municipalityData.municipio);
-                        if (municipio) {
-                          setSelectedMunicipio(municipio.id.toString());
-                        }
-                      }}
-                    >
-                      Selecionar Município
-                    </button>
-                  </div>
-                ))}
+              <div className="community-links-section">
+                <div className="community-links-container">
+                  {communitiesData.map(municipality => (
+                    <MunicipalityCard
+                      key={municipality.municipio_id}
+                      municipality={municipality}
+                      onSelect={() => setSelectedMunicipio(municipality.municipio_id.toString())}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -17,6 +17,16 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Add API versioning middleware
+const apiVersion = (req, res, next) => {
+  // Extract version from header or use default
+  const version = req.headers['api-version'] || '1';
+  req.apiVersion = version;
+  next();
+};
+
+app.use('/api', apiVersion);
+
 // Configure multer for file upload
 const upload = multer({
   dest: 'uploads/',
@@ -85,61 +95,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // API Routes
 
-// Get sales by category (for pie chart)
-app.get('/api/sales/by-category', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM sales_by_category');
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching sales by category:', error);
-    res.status(500).send('Server error');
-  }
-});
-
-// Get monthly sales (for bar/line chart)
-app.get('/api/sales/monthly', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM monthly_sales');
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching monthly sales:', error);
-    res.status(500).send('Server error');
-  }
-});
-
-// Get product inventory (for bar chart)
-app.get('/api/products/inventory', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT p.name as product_name, p.stock_quantity, pc.name as category_name
-      FROM products p
-      JOIN product_categories pc ON p.category_id = pc.id
-      ORDER BY p.stock_quantity DESC
-    `);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching product inventory:', error);
-    res.status(500).send('Server error');
-  }
-});
-
-// Get recent sales (for table display)
-app.get('/api/sales/recent', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT s.id, p.name as product_name, s.quantity, s.total_price, s.sale_date
-      FROM sales s
-      JOIN products p ON s.product_id = p.id
-      ORDER BY s.sale_date DESC
-      LIMIT 10
-    `);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching recent sales:', error);
-    res.status(500).send('Server error');
-  }
-});
-
 // NEW FISHING COMMUNITIES API ENDPOINTS
 
 /**
@@ -177,46 +132,104 @@ app.get('/api/municipios', async (req, res) => {
 });
 
 // IMPORTANT: Fixed route order - specific routes before parametrized routes
-// Get all communities summary by municipality (for visualization)
+// Example of versioned endpoint
 app.get('/api/comunidades/summary/municipio', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM comunidades_por_municipio');
-    console.log("Fetched community summary:", result.rows); // Added logging
+    // First check if the view exists
+    const viewCheck = await pool.query(`
+      SELECT table_name
+      FROM information_schema.views
+      WHERE table_schema = 'public'
+      AND table_name = 'comunidades_por_municipio'
+    `);
+
+    let result;
+
+    if (viewCheck.rows.length === 0) {
+      // View doesn't exist, use a direct query instead
+      result = await pool.query(`
+        SELECT
+          m.id as municipio_id,
+          m.nome as municipio,
+          COUNT(DISTINCT c.id) as num_comunidades,
+          SUM(cc.pescadores) as total_pescadores,
+          SUM(cc.pessoas) as total_pessoas,
+          SUM(cc.familias) as total_familias
+        FROM
+          municipios m
+        LEFT JOIN
+          comunidades c ON m.id = c.municipio_id
+        LEFT JOIN
+          censo_comunidade cc ON c.id = cc.comunidade_id
+        WHERE
+          cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
+        GROUP BY
+          m.id, m.nome
+        ORDER BY
+          m.nome
+      `);
+    } else {
+      // View exists, use it
+      result = await pool.query('SELECT * FROM comunidades_por_municipio');
+    }
+
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching community summary:', error);
-    res.status(500).json({ error: error.message }); // More detailed error
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Get community details (basic info plus demographic data if available)
+// Update the community details endpoint
 app.get('/api/comunidades/details/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const comunidadeResult = await pool.query(
-      `SELECT c.*, m.nome as municipio_nome
-       FROM comunidades c
-       JOIN municipios m ON c.municipio_id = m.id
-       WHERE c.id = $1`,
-      [id]
-    );
 
-    const demograficosResult = await pool.query(
-      'SELECT * FROM demograficos WHERE comunidade_id = $1',
-      [id]
-    );
+    // Get basic community information
+    const communityResult = await pool.query(`
+      SELECT c.id, c.nome, m.nome as municipio_nome
+      FROM comunidades c
+      JOIN municipios m ON c.municipio_id = m.id
+      WHERE c.id = $1
+    `, [id]);
 
-    if (comunidadeResult.rows.length === 0) {
-      return res.status(404).send('Community not found');
+    if (communityResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Community not found' });
     }
 
-    res.json({
-      ...comunidadeResult.rows[0],
-      demograficos: demograficosResult.rows
-    });
+    // Get census data separately to avoid failing the whole request
+    let censusData = {};
+    try {
+      const censusResult = await pool.query(`
+        SELECT pessoas, familias, pescadores
+        FROM censo_comunidade
+        WHERE comunidade_id = $1
+        ORDER BY ano_referencia DESC
+        LIMIT 1
+      `, [id]);
+
+      if (censusResult.rows.length > 0) {
+        censusData = censusResult.rows[0];
+      } else {
+        // Provide default values if no census data
+        censusData = { pessoas: 0, familias: 0, pescadores: 0 };
+      }
+    } catch (censusError) {
+      console.error('Error fetching census data:', censusError);
+      // Provide default values on error
+      censusData = { pessoas: 0, familias: 0, pescadores: 0 };
+    }
+
+    // Format response with available data
+    const result = {
+      ...communityResult.rows[0],
+      ...censusData
+    };
+
+    res.json(result);
   } catch (error) {
     console.error('Error fetching community details:', error);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -225,13 +238,21 @@ app.get('/api/comunidades/:municipioId', async (req, res) => {
   try {
     const { municipioId } = req.params;
     const result = await pool.query(
-      'SELECT * FROM comunidades WHERE municipio_id = $1 ORDER BY nome',
+      `SELECT c.*,
+        cc.pessoas,
+        cc.pescadores,
+        cc.familias
+       FROM comunidades c
+       LEFT JOIN censo_comunidade cc ON c.id = cc.comunidade_id
+       WHERE c.municipio_id = $1
+       AND cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
+       ORDER BY c.nome`,
       [municipioId]
     );
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching communities:', error);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -416,6 +437,133 @@ app.post('/api/upload/csv/localities', upload.single('file'), async (req, res) =
     res.status(500).json({ error: 'Server error during import' });
   } finally {
     client.release();
+  }
+});
+
+// Add this endpoint after other import endpoints
+app.post('/api/upload/csv/census', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const { year } = req.body;
+  if (!year) {
+    return res.status(400).json({ error: 'Census year is required' });
+  }
+
+  // Parse year to integer
+  const yearInt = parseInt(year);
+  if (isNaN(yearInt)) {
+    return res.status(400).json({ error: 'Invalid year format' });
+  }
+
+  const currentYear = new Date().getFullYear();
+  if (yearInt < 1990 || yearInt >= currentYear) {
+    return res.status(400).json({ error: `Year must be between 1990 and ${currentYear - 1}` });
+  }
+
+  const results = [];
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Get the data source ID
+    const dataSourceResult = await client.query(
+      'SELECT id FROM data_sources WHERE name LIKE $1',
+      [`%PESCARTE%`]
+    );
+
+    const dataSourceId = dataSourceResult.rows[0]?.id || 1;
+
+    // Log the import start
+    const logResult = await client.query(
+      'INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id',
+      [req.file.originalname, 'processing', 0]
+    );
+    const logId = logResult.rows[0].id;
+
+    // Process CSV
+    fs.createReadStream(req.file.path)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          let recordsImported = 0;
+
+          for (const row of results) {
+            const { comunidade_id, pessoas, familias, pescadores } = row;
+
+            if (!comunidade_id || !pessoas) {
+              continue; // Skip incomplete records
+            }
+
+            // Check if the community exists
+            const communityResult = await client.query(
+              'SELECT id FROM comunidades WHERE id = $1',
+              [comunidade_id]
+            );
+
+            if (communityResult.rows.length === 0) {
+              continue; // Skip if community doesn't exist
+            }
+
+            // Insert or update census data
+            await client.query(
+              `INSERT INTO censo_comunidade
+               (comunidade_id, ano_referencia, pessoas, familias, pescadores, data_source_id)
+               VALUES ($1, $2, $3, $4, $5, $6)
+               ON CONFLICT (comunidade_id, ano_referencia)
+               DO UPDATE SET
+                 pessoas = $3,
+                 familias = $4,
+                 pescadores = $5
+              `,
+              [
+                comunidade_id,
+                yearInt,
+                parseInt(pessoas) || 0,
+                parseInt(familias) || 0,
+                parseInt(pescadores) || 0,
+                dataSourceId
+              ]
+            );
+
+            recordsImported++;
+          }
+
+          // Update the import log
+          await client.query(
+            'UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3',
+            ['completed', recordsImported, logId]
+          );
+
+          await client.query('COMMIT');
+
+          // Delete the uploaded file
+          fs.unlinkSync(req.file.path);
+
+          res.status(200).json({
+            message: `Census data for year ${yearInt} imported successfully`,
+            recordsImported
+          });
+
+        } catch (err) {
+          await client.query('ROLLBACK');
+          await client.query(
+            'UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3',
+            ['failed', err.message, logId]
+          );
+
+          console.error('Error processing census CSV:', err);
+          res.status(500).json({ error: 'Failed to process census data' });
+        }
+      });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Database transaction error:', err);
+    res.status(500).json({ error: 'Server error during import' });
   }
 });
 
@@ -611,68 +759,86 @@ app.get('/api/comunidades/timeseries/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // In a real scenario, you'd query historical data from your database
-    // Here we'll generate some sample data since your schema may not have historical tables yet
-
+    // First, check if the community exists
     const communityResult = await pool.query(
       'SELECT nome FROM comunidades WHERE id = $1',
       [id]
     );
 
     if (communityResult.rows.length === 0) {
-      return res.status(404).send('Community not found');
+      return res.status(404).json({ error: 'Community not found' });
     }
 
-    const communityName = communityResult.rows[0].nome;
+    // Get actual historical census data from the database
+    const historicalData = await pool.query(
+      `SELECT
+        cc.ano_referencia as ano,
+        cc.pessoas,
+        cc.pescadores,
+        cc.familias
+       FROM censo_comunidade cc
+       WHERE cc.comunidade_id = $1
+       ORDER BY cc.ano_referencia DESC`,
+      [id]
+    );
 
-    // Generate 5 years of sample data with slight variations
-    const currentYear = new Date().getFullYear();
-    const historicalData = [];
+    // If no historical data found, return a single year's data to avoid errors
+    if (historicalData.rows.length === 0) {
+      // Get current census data
+      const currentData = await pool.query(
+        `SELECT
+          cc.ano_referencia as ano,
+          cc.pessoas,
+          cc.pescadores,
+          cc.familias
+         FROM censo_comunidade cc
+         WHERE cc.comunidade_id = $1
+         LIMIT 1`,
+        [id]
+      );
 
-    for (let i = 0; i < 5; i++) {
-      const year = currentYear - i;
-      const baseValue = 100 + i * 10; // Increasing base value for older years
-
-      historicalData.push({
-        ano: year,
-        pessoas: baseValue + Math.floor(Math.random() * 50),
-        pescadores: baseValue - 30 + Math.floor(Math.random() * 20),
-        familias: baseValue - 50 + Math.floor(Math.random() * 15)
-      });
+      return res.json(currentData.rows);
     }
 
-    res.json(historicalData);
+    res.json(historicalData.rows);
   } catch (error) {
     console.error('Error fetching time series data:', error);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: error.message }); // Return the specific error message for debugging
   }
 });
 
 // Statistical analysis endpoint
 app.get('/api/analytics/statistics', async (req, res) => {
   try {
-    // Calculate key statistics across communities and municipalities
+    // Replace the complex SQL query with one compatible with your real data schema
     const result = await pool.query(`
       WITH community_stats AS (
         SELECT
           c.id,
           c.nome,
           m.nome as municipio,
-          c.pessoas,
-          c.pescadores,
-          c.familias,
-          (c.pescadores::float / c.pessoas) * 100 as pescadores_perc
+          cc.pessoas,
+          cc.pescadores,
+          cc.familias,
+          CASE
+            WHEN cc.pessoas > 0 THEN (cc.pescadores::float / cc.pessoas) * 100
+            ELSE 0
+          END as pescadores_perc
         FROM
           comunidades c
         JOIN
           municipios m ON c.municipio_id = m.id
+        JOIN
+          censo_comunidade cc ON c.id = cc.comunidade_id
+        WHERE
+          cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
       )
       SELECT
         COUNT(*) as total_communities,
-        AVG(pescadores_perc) as avg_pescadores_perc,
-        STDDEV(pescadores_perc) as stddev_pescadores_perc,
-        MIN(pescadores_perc) as min_pescadores_perc,
-        MAX(pescadores_perc) as max_pescadores_perc,
+        ROUND(AVG(pescadores_perc)::numeric, 1) as avg_pescadores_perc,
+        ROUND(STDDEV(pescadores_perc)::numeric, 1) as stddev_pescadores_perc,
+        ROUND(MIN(pescadores_perc)::numeric, 1) as min_pescadores_perc,
+        ROUND(MAX(pescadores_perc)::numeric, 1) as max_pescadores_perc,
 
         -- Community with highest percentage
         (SELECT nome FROM community_stats WHERE pescadores_perc = (SELECT MAX(pescadores_perc) FROM community_stats)) as highest_perc_community,
@@ -688,13 +854,25 @@ app.get('/api/analytics/statistics', async (req, res) => {
         percentile_cont(0.5) WITHIN GROUP (ORDER BY pessoas) as median_community_size,
 
         -- Average family size
-        AVG(pessoas::float / familias) as avg_family_size
+        ROUND(AVG(CASE WHEN familias > 0 THEN pessoas::float / familias ELSE 0 END)::numeric, 1) as avg_family_size
       FROM
         community_stats
     `);
 
     // Get distribution by community size
     const sizeDistribution = await pool.query(`
+      WITH community_data AS (
+        SELECT
+          c.id,
+          c.nome,
+          cc.pessoas
+        FROM
+          comunidades c
+        JOIN
+          censo_comunidade cc ON c.id = cc.comunidade_id
+        WHERE
+          cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
+      )
       SELECT
         CASE
           WHEN pessoas < 100 THEN 'Muito pequena (< 100)'
@@ -704,12 +882,12 @@ app.get('/api/analytics/statistics', async (req, res) => {
           ELSE 'Muito grande (1000+)'
         END as size_category,
         COUNT(*) as community_count
-      FROM comunidades
+      FROM community_data
       GROUP BY size_category
       ORDER BY MIN(pessoas)
     `);
 
-    // Get locality counts by community
+    // Get locality counts by community (updated to work with your schema)
     const localityCounts = await pool.query(`
       SELECT
         c.nome as community_name,
@@ -735,51 +913,58 @@ app.get('/api/analytics/statistics', async (req, res) => {
     });
   } catch (error) {
     console.error('Error generating analytics:', error);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: error.message }); // Return the specific error message for debugging
   }
 });
 
 // Clustering analysis endpoint
 app.get('/api/analytics/clusters', async (req, res) => {
   try {
-    // Perform k-means like clustering based on percentage of fishermen
-    // This is a simplified version - in production, you'd use a proper statistical package
+    // Modified clustering analysis to work with censo_comunidade table
     const result = await pool.query(`
       WITH community_data AS (
         SELECT
           c.id,
           c.nome as community_name,
           m.nome as municipality_name,
-          c.pessoas,
-          c.pescadores,
-          c.familias,
-          (c.pescadores::float / c.pessoas) * 100 as pescadores_percentage,
-          (c.pessoas::float / c.familias) as avg_family_size
+          cc.pessoas as population,
+          cc.pescadores as fishermen,
+          cc.familias as families,
+          CASE WHEN cc.pessoas > 0 THEN
+            ROUND((cc.pescadores::float / cc.pessoas) * 100, 1)
+          ELSE 0 END as fishermen_percentage,
+          CASE WHEN cc.familias > 0 THEN
+            ROUND((cc.pessoas::float / cc.familias), 1)
+          ELSE 0 END as avg_family_size
         FROM
           comunidades c
         JOIN
           municipios m ON c.municipio_id = m.id
+        JOIN
+          censo_comunidade cc ON c.id = cc.comunidade_id
+        WHERE
+          cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
       ),
       percentiles AS (
         SELECT
-          percentile_cont(0.33) WITHIN GROUP (ORDER BY pescadores_percentage) as p33,
-          percentile_cont(0.67) WITHIN GROUP (ORDER BY pescadores_percentage) as p67
+          percentile_cont(0.33) WITHIN GROUP (ORDER BY fishermen_percentage) as p33,
+          percentile_cont(0.67) WITHIN GROUP (ORDER BY fishermen_percentage) as p67
         FROM community_data
       )
       SELECT
         community_name,
         municipality_name,
-        pessoas as population,
-        pescadores as fishermen,
-        round(pescadores_percentage::numeric, 1) as fishermen_percentage,
-        round(avg_family_size::numeric, 1) as avg_family_size,
+        population,
+        fishermen,
+        fishermen_percentage,
+        avg_family_size,
         CASE
-          WHEN pescadores_percentage < (SELECT p33 FROM percentiles) THEN 'Low fishing dependence'
-          WHEN pescadores_percentage < (SELECT p67 FROM percentiles) THEN 'Moderate fishing dependence'
+          WHEN fishermen_percentage < (SELECT p33 FROM percentiles) THEN 'Low fishing dependence'
+          WHEN fishermen_percentage < (SELECT p67 FROM percentiles) THEN 'Moderate fishing dependence'
           ELSE 'High fishing dependence'
         END as cluster
       FROM community_data
-      ORDER BY pescadores_percentage DESC
+      ORDER BY fishermen_percentage DESC
     `);
 
     // Count communities in each cluster
@@ -797,57 +982,103 @@ app.get('/api/analytics/clusters', async (req, res) => {
     });
   } catch (error) {
     console.error('Error generating cluster analysis:', error);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: error.message }); // Return the specific error message for debugging
   }
 });
 
 // Predictive analysis endpoint (simplified)
 app.get('/api/analytics/predictions', async (req, res) => {
   try {
-    // Get current data
+    // Get the actual latest census data
     const currentData = await pool.query(`
       SELECT
+        MAX(ano_referencia) as latest_year,
         SUM(pessoas) as total_population,
         SUM(pescadores) as total_fishermen,
-        (SUM(pescadores)::float / SUM(pessoas) * 100) as current_percentage
-      FROM comunidades
+        ROUND((SUM(pescadores)::float / NULLIF(SUM(pessoas), 0) * 100), 2) as current_percentage
+      FROM censo_comunidade
+      WHERE ano_referencia = (
+        SELECT MAX(ano_referencia) FROM censo_comunidade
+      )
     `);
 
-    // Simple linear projection for next 5 years
-    // In a real implementation, you'd use more sophisticated statistical models
-    const currentPopulation = currentData.rows[0].total_population;
-    const currentFishermen = currentData.rows[0].total_fishermen;
+    // Get historical data points for trend calculation
+    const historicalData = await pool.query(`
+      SELECT
+        ano_referencia as year,
+        SUM(pessoas) as population,
+        SUM(pescadores) as fishermen
+      FROM censo_comunidade
+      GROUP BY ano_referencia
+      ORDER BY ano_referencia
+    `);
 
-    // Assume 2% annual growth for population, 3% for fishermen
-    const predictions = [];
-    const currentYear = new Date().getFullYear();
-
-    for (let i = 1; i <= 5; i++) {
-      const year = currentYear + i;
-      const projectedPopulation = Math.round(currentPopulation * Math.pow(1.02, i));
-      const projectedFishermen = Math.round(currentFishermen * Math.pow(1.03, i));
-      const projectedPercentage = (projectedFishermen / projectedPopulation) * 100;
-
-      predictions.push({
-        year,
-        population: projectedPopulation,
-        fishermen: projectedFishermen,
-        percentage: parseFloat(projectedPercentage.toFixed(2))
+    // If we don't have enough historical data, we cannot make predictions
+    if (historicalData.rows.length < 2) {
+      return res.json({
+        current: {
+          year: currentData.rows[0].latest_year,
+          population: parseInt(currentData.rows[0].total_population) || 0,
+          fishermen: parseInt(currentData.rows[0].total_fishermen) || 0,
+          percentage: parseFloat(currentData.rows[0].current_percentage) || 0,
+        },
+        predictions: [],
+        note: "Insufficient historical data to make predictions."
       });
     }
 
+    // Otherwise, use only real data for current values
     res.json({
       current: {
-        year: currentYear,
-        population: parseInt(currentPopulation),
-        fishermen: parseInt(currentFishermen),
-        percentage: parseFloat(currentData.rows[0].current_percentage.toFixed(2))
+        year: currentData.rows[0].latest_year,
+        population: parseInt(currentData.rows[0].total_population) || 0,
+        fishermen: parseInt(currentData.rows[0].total_fishermen) || 0,
+        percentage: parseFloat(currentData.rows[0].current_percentage) || 0,
       },
-      predictions
+      historicalData: historicalData.rows,
+      message: "Using only actual historical data. For predictions, consider uploading multiple years of census data."
     });
   } catch (error) {
-    console.error('Error generating predictions:', error);
+    console.error('Error in predictions endpoint:', error);
     res.status(500).send('Server error');
+  }
+});
+
+/**
+ * @swagger
+ * /api/comunidades/stats:
+ *   get:
+ *     summary: Retrieves summary statistics about fishing communities
+ *     responses:
+ *       200:
+ *         description: Statistics about fishing communities
+ */
+app.get('/api/comunidades/stats', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COUNT(DISTINCT m.id) as total_municipios,
+        COUNT(DISTINCT c.id) as total_comunidades,
+        SUM(cc.pescadores) as total_pescadores,
+        SUM(cc.pessoas) as total_pessoas,
+        SUM(cc.familias) as total_familias,
+        CASE WHEN SUM(cc.pessoas) > 0 THEN
+          ROUND((SUM(cc.pescadores)::float / SUM(cc.pessoas)) * 100, 1)
+        ELSE 0 END as percentual_medio_pescadores
+      FROM
+        municipios m
+      LEFT JOIN
+        comunidades c ON m.id = c.municipio_id
+      LEFT JOIN
+        censo_comunidade cc ON c.id = cc.comunidade_id
+      WHERE
+        cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
+    `);
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching community statistics:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -2,7 +2,8 @@
 
 2. update the readme.md file.
 
-3. ask the sonnet 3.7 thinkinh about the project.
+3. Ver comunidades dashboard inst working.
+Make the Estatisticas Gerais the main Tipo de Analise when opening  analises avancadas.
+Make the Comparar comunidades Graphs smaller, and improve it.
 
-!!!!!!!!!!!!!!!!!!
-Can you extract data from 'tabula-data', 'tabula-data2' and 'tabula3-data' attached in this conversarion? The data in tha csv contain will compose the new version of the database of our web-db application of the Pescarte Viz. ATTETION: the tables may be badly separete with comma ',' you will have to find out the real data organization.
+!!!make project more modular

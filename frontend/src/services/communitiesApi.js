@@ -65,3 +65,13 @@ export const fetchAllCommunities = async () => {
     throw error;
   }
 };
+
+export const fetchCommunityTimeSeries = async (communityId) => {
+  try {
+    const response = await axios.get(`${API_URL}/comunidades/timeseries/${communityId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching community time series:', error);
+    throw error;
+  }
+};
