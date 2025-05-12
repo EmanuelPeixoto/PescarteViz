@@ -1,0 +1,63 @@
+Critérios para definição de localidade/comunidade
+Presença de 1 ou mais itens abaixo
+Localidade Comunidade
+Identidade: auto reconhecimento Identidade: auto reconhecimento
+Mínimo: 3 famílias Mínimo: 30 famílias
+Local de embarque/desembarque Local de embarque/desembarque
+Proximidade entre as famílias Proximidade entre as localidades
+MUNICÍPIOS,COMUNIDADES,LOCALIDADES,PESSOAS,FAMÍLIAS,PESCADORES
+Campos dos Goytacazes,7,29,1650,589,824
+Macaé,1,5,820,295,320
+São Francisco de Itabapoana,4,31,3048,1018,1351
+São João da Barra,5,28,1273,482,532
+Arraial do Cabo,5,12,1079,384,438
+Cabo Frio,7,23,1770,560,678
+Quissamã,3,16,442,150,188
+Total,32,144,10082,3478,4331
+Município de Campos dos Goytacazes
+Comunidade Pessoas Famílias Pescadores
+Coroa Grande 57 23 33
+Farol de São Tomé 849 305 455
+Lagoa de Cima 185 67 92
+Parque Prazeres 118 42 55
+Ponta Grossa dos Fidalgos 238 91 111
+Sant'Ana 66 22 27
+Tocos 137 39 51
+Total 1650 589 824
+"",Município de Macaé,
+Comunidade,Pessoas Famílias,Pescadores
+Barra de Macaé,820 295,320
+Total,820 295,320
+Município de São Francisco de Itabapoana
+Comunidade Pessoas Famílias Pescadores
+Barra de Itabapoana 973 315 393
+Gargaú 1207 414 577
+Guaxindiba 622 209 256
+Lagoa Feia 246 80 125
+Total 3048 1018 1351
+Município de São João da Barra,
+Comunidade Pessoas Famílias,Pescadores
+Açú 274 115,127
+Atafona 786 277,310
+Barcelos 25 14,14
+Grussaí 45 17,19
+São João da Barra 143 59,62
+Total 1273 482,532
+"",Município de Arraial do Cabo,
+Comunidade,Pessoas Famílias,Pescadores
+Figueira,220 79,91
+Monte Alto,60 25,27
+Praia dos Anjos,276 96,111
+Praia Grande,398 140,158
+Prainha,125 44,51
+Total,1079 384,438
+"",Município de Cabo Frio,
+Comunidade,Pessoas Famílias,Pescadores
+Botafogo,22 8,8
+Centro (Cabo Frio),524 164,182
+Gamboa,217 70,85
+Jacaré,118 41,42
+Jardim Peró,42 16,16
+Praia do Siqueira,686 219,289
+Tamoios,161 42,56
+Total,1770 560,678

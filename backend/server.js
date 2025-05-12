@@ -329,6 +329,96 @@ app.post('/api/upload/csv/demographics', upload.single('file'), async (req, res)
   }
 });
 
+// Add this endpoint after other import endpoints
+app.post('/api/upload/csv/localities', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const results = [];
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Log the import start
+    const logResult = await client.query(
+      'INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id',
+      [req.file.originalname, 'processing', 0]
+    );
+    const logId = logResult.rows[0].id;
+
+    // Process CSV
+    fs.createReadStream(req.file.path)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          let recordsImported = 0;
+
+          for (const row of results) {
+            const { MUNICIPIO, COMUNIDADE, LOCALIDADE } = row;
+
+            if (!MUNICIPIO || !COMUNIDADE || !LOCALIDADE) {
+              continue; // Skip incomplete records
+            }
+
+            // Find the community ID
+            const communityResult = await client.query(
+              `SELECT c.id FROM comunidades c
+               JOIN municipios m ON c.municipio_id = m.id
+               WHERE c.nome = $1 AND m.nome = $2`,
+              [COMUNIDADE.trim(), MUNICIPIO.trim()]
+            );
+
+            if (communityResult.rows.length > 0) {
+              const comunidade_id = communityResult.rows[0].id;
+
+              // Insert locality
+              await client.query(
+                'INSERT INTO localidades (comunidade_id, nome) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                [comunidade_id, LOCALIDADE.trim()]
+              );
+
+              recordsImported++;
+            }
+          }
+
+          // Update the import log
+          await client.query(
+            'UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3',
+            ['completed', recordsImported, logId]
+          );
+
+          await client.query('COMMIT');
+
+          // Delete the uploaded file
+          fs.unlinkSync(req.file.path);
+
+          res.status(200).json({
+            message: 'Locality data imported successfully',
+            recordsImported
+          });
+        } catch (err) {
+          await client.query('ROLLBACK');
+          await client.query(
+            'UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3',
+            ['failed', err.message, logId]
+          );
+
+          console.error('Error processing locality CSV:', err);
+          res.status(500).json({ error: 'Failed to process locality data' });
+        }
+      });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Database transaction error:', err);
+    res.status(500).json({ error: 'Server error during import' });
+  } finally {
+    client.release();
+  }
+});
+
 // Add debugging route to check database view
 app.get('/api/debug/view/comunidades_por_municipio', async (req, res) => {
   try {
@@ -554,6 +644,209 @@ app.get('/api/comunidades/timeseries/:id', async (req, res) => {
     res.json(historicalData);
   } catch (error) {
     console.error('Error fetching time series data:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Statistical analysis endpoint
+app.get('/api/analytics/statistics', async (req, res) => {
+  try {
+    // Calculate key statistics across communities and municipalities
+    const result = await pool.query(`
+      WITH community_stats AS (
+        SELECT
+          c.id,
+          c.nome,
+          m.nome as municipio,
+          c.pessoas,
+          c.pescadores,
+          c.familias,
+          (c.pescadores::float / c.pessoas) * 100 as pescadores_perc
+        FROM
+          comunidades c
+        JOIN
+          municipios m ON c.municipio_id = m.id
+      )
+      SELECT
+        COUNT(*) as total_communities,
+        AVG(pescadores_perc) as avg_pescadores_perc,
+        STDDEV(pescadores_perc) as stddev_pescadores_perc,
+        MIN(pescadores_perc) as min_pescadores_perc,
+        MAX(pescadores_perc) as max_pescadores_perc,
+
+        -- Community with highest percentage
+        (SELECT nome FROM community_stats WHERE pescadores_perc = (SELECT MAX(pescadores_perc) FROM community_stats)) as highest_perc_community,
+        (SELECT municipio FROM community_stats WHERE pescadores_perc = (SELECT MAX(pescadores_perc) FROM community_stats)) as highest_perc_municipio,
+        (SELECT MAX(pescadores_perc) FROM community_stats) as highest_perc_value,
+
+        -- Community with lowest percentage
+        (SELECT nome FROM community_stats WHERE pescadores_perc = (SELECT MIN(pescadores_perc) FROM community_stats)) as lowest_perc_community,
+        (SELECT municipio FROM community_stats WHERE pescadores_perc = (SELECT MIN(pescadores_perc) FROM community_stats)) as lowest_perc_municipio,
+        (SELECT MIN(pescadores_perc) FROM community_stats) as lowest_perc_value,
+
+        -- Median community size
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY pessoas) as median_community_size,
+
+        -- Average family size
+        AVG(pessoas::float / familias) as avg_family_size
+      FROM
+        community_stats
+    `);
+
+    // Get distribution by community size
+    const sizeDistribution = await pool.query(`
+      SELECT
+        CASE
+          WHEN pessoas < 100 THEN 'Muito pequena (< 100)'
+          WHEN pessoas < 250 THEN 'Pequena (100-249)'
+          WHEN pessoas < 500 THEN 'Média (250-499)'
+          WHEN pessoas < 1000 THEN 'Grande (500-999)'
+          ELSE 'Muito grande (1000+)'
+        END as size_category,
+        COUNT(*) as community_count
+      FROM comunidades
+      GROUP BY size_category
+      ORDER BY MIN(pessoas)
+    `);
+
+    // Get locality counts by community
+    const localityCounts = await pool.query(`
+      SELECT
+        c.nome as community_name,
+        m.nome as municipio_name,
+        COUNT(l.id) as num_localities
+      FROM
+        comunidades c
+      JOIN
+        municipios m ON c.municipio_id = m.id
+      LEFT JOIN
+        localidades l ON c.id = l.comunidade_id
+      GROUP BY
+        c.nome, m.nome
+      ORDER BY
+        COUNT(l.id) DESC
+      LIMIT 10
+    `);
+
+    res.json({
+      generalStats: result.rows[0],
+      sizeDistribution: sizeDistribution.rows,
+      topCommunitiesByLocalities: localityCounts.rows
+    });
+  } catch (error) {
+    console.error('Error generating analytics:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Clustering analysis endpoint
+app.get('/api/analytics/clusters', async (req, res) => {
+  try {
+    // Perform k-means like clustering based on percentage of fishermen
+    // This is a simplified version - in production, you'd use a proper statistical package
+    const result = await pool.query(`
+      WITH community_data AS (
+        SELECT
+          c.id,
+          c.nome as community_name,
+          m.nome as municipality_name,
+          c.pessoas,
+          c.pescadores,
+          c.familias,
+          (c.pescadores::float / c.pessoas) * 100 as pescadores_percentage,
+          (c.pessoas::float / c.familias) as avg_family_size
+        FROM
+          comunidades c
+        JOIN
+          municipios m ON c.municipio_id = m.id
+      ),
+      percentiles AS (
+        SELECT
+          percentile_cont(0.33) WITHIN GROUP (ORDER BY pescadores_percentage) as p33,
+          percentile_cont(0.67) WITHIN GROUP (ORDER BY pescadores_percentage) as p67
+        FROM community_data
+      )
+      SELECT
+        community_name,
+        municipality_name,
+        pessoas as population,
+        pescadores as fishermen,
+        round(pescadores_percentage::numeric, 1) as fishermen_percentage,
+        round(avg_family_size::numeric, 1) as avg_family_size,
+        CASE
+          WHEN pescadores_percentage < (SELECT p33 FROM percentiles) THEN 'Low fishing dependence'
+          WHEN pescadores_percentage < (SELECT p67 FROM percentiles) THEN 'Moderate fishing dependence'
+          ELSE 'High fishing dependence'
+        END as cluster
+      FROM community_data
+      ORDER BY pescadores_percentage DESC
+    `);
+
+    // Count communities in each cluster
+    const clusterSummary = {};
+    result.rows.forEach(row => {
+      if (!clusterSummary[row.cluster]) {
+        clusterSummary[row.cluster] = 0;
+      }
+      clusterSummary[row.cluster]++;
+    });
+
+    res.json({
+      clusterAnalysis: result.rows,
+      clusterSummary
+    });
+  } catch (error) {
+    console.error('Error generating cluster analysis:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Predictive analysis endpoint (simplified)
+app.get('/api/analytics/predictions', async (req, res) => {
+  try {
+    // Get current data
+    const currentData = await pool.query(`
+      SELECT
+        SUM(pessoas) as total_population,
+        SUM(pescadores) as total_fishermen,
+        (SUM(pescadores)::float / SUM(pessoas) * 100) as current_percentage
+      FROM comunidades
+    `);
+
+    // Simple linear projection for next 5 years
+    // In a real implementation, you'd use more sophisticated statistical models
+    const currentPopulation = currentData.rows[0].total_population;
+    const currentFishermen = currentData.rows[0].total_fishermen;
+
+    // Assume 2% annual growth for population, 3% for fishermen
+    const predictions = [];
+    const currentYear = new Date().getFullYear();
+
+    for (let i = 1; i <= 5; i++) {
+      const year = currentYear + i;
+      const projectedPopulation = Math.round(currentPopulation * Math.pow(1.02, i));
+      const projectedFishermen = Math.round(currentFishermen * Math.pow(1.03, i));
+      const projectedPercentage = (projectedFishermen / projectedPopulation) * 100;
+
+      predictions.push({
+        year,
+        population: projectedPopulation,
+        fishermen: projectedFishermen,
+        percentage: parseFloat(projectedPercentage.toFixed(2))
+      });
+    }
+
+    res.json({
+      current: {
+        year: currentYear,
+        population: parseInt(currentPopulation),
+        fishermen: parseInt(currentFishermen),
+        percentage: parseFloat(currentData.rows[0].current_percentage.toFixed(2))
+      },
+      predictions
+    });
+  } catch (error) {
+    console.error('Error generating predictions:', error);
     res.status(500).send('Server error');
   }
 });

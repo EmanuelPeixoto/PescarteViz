@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchMunicipios, fetchComunidadesByMunicipio } from '../services/communitiesApi';
 import axios from 'axios';
+import LocalityDataUploader from './LocalityDataUploader';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -121,96 +122,102 @@ const DataUploadForm = () => {
   };
 
   return (
-    <div className="upload-form-container">
-      <h2>Importar Dados da Comunidade</h2>
+    <div className="data-upload-container">
+      <div className="upload-form-container">
+        <h2>Importar Dados da Comunidade</h2>
 
-      {message && <div className="message success">{message}</div>}
-      {error && <div className="message error">{error}</div>}
+        {message && <div className="message success">{message}</div>}
+        {error && <div className="message error">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="upload-form">
-        <div className="form-group">
-          <label htmlFor="municipio">Município:</label>
-          <select
-            id="municipio"
-            value={selectedMunicipio}
-            onChange={handleMunicipioChange}
-            required
-          >
-            <option value="">Selecione o Município</option>
-            {municipios.map(mun => (
-              <option key={mun.id} value={mun.id}>{mun.nome}</option>
-            ))}
-          </select>
-        </div>
+        <form onSubmit={handleSubmit} className="upload-form">
+          <div className="form-group">
+            <label htmlFor="municipio">Município:</label>
+            <select
+              id="municipio"
+              value={selectedMunicipio}
+              onChange={handleMunicipioChange}
+              required
+            >
+              <option value="">Selecione o Município</option>
+              {municipios.map(mun => (
+                <option key={mun.id} value={mun.id}>{mun.nome}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="comunidade">Comunidade:</label>
-          <select
-            id="comunidade"
-            value={selectedComunidade}
-            onChange={handleComunidadeChange}
-            disabled={!selectedMunicipio}
-            required
-          >
-            <option value="">Selecione a Comunidade</option>
-            {comunidades.map(com => (
-              <option key={com.id} value={com.id}>{com.nome}</option>
-            ))}
-          </select>
-        </div>
+          <div className="form-group">
+            <label htmlFor="comunidade">Comunidade:</label>
+            <select
+              id="comunidade"
+              value={selectedComunidade}
+              onChange={handleComunidadeChange}
+              disabled={!selectedMunicipio}
+              required
+            >
+              <option value="">Selecione a Comunidade</option>
+              {comunidades.map(com => (
+                <option key={com.id} value={com.id}>{com.nome}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="dataType">Tipo de Dados:</label>
-          <select
-            id="dataType"
-            value={dataType}
-            onChange={handleDataTypeChange}
-            required
-          >
-            <option value="demograficos">Dados Demográficos</option>
-            <option value="ambientes">Ambientes de Pesca</option>
-          </select>
-        </div>
+          <div className="form-group">
+            <label htmlFor="dataType">Tipo de Dados:</label>
+            <select
+              id="dataType"
+              value={dataType}
+              onChange={handleDataTypeChange}
+              required
+            >
+              <option value="demograficos">Dados Demográficos</option>
+              <option value="ambientes">Ambientes de Pesca</option>
+            </select>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="csvFile">Arquivo CSV:</label>
-          <input
-            type="file"
-            id="csvFile"
-            accept=".csv"
-            onChange={handleFileChange}
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="csvFile">Arquivo CSV:</label>
+            <input
+              type="file"
+              id="csvFile"
+              accept=".csv"
+              onChange={handleFileChange}
+              required
+            />
+          </div>
 
-        <button type="submit" disabled={uploading} className="upload-button">
-          {uploading ? 'Enviando...' : 'Importar Dados'}
+          <button type="submit" disabled={uploading} className="upload-button">
+            {uploading ? 'Enviando...' : 'Importar Dados'}
+          </button>
+        </form>
+
+        <button onClick={() => downloadTemplate(dataType)} className="download-template-button">
+          Baixar Modelo CSV
         </button>
-      </form>
 
-      <button onClick={() => downloadTemplate(dataType)} className="download-template-button">
-        Baixar Modelo CSV
-      </button>
+        <div className="upload-instructions">
+          <h3>Diretrizes de Formato CSV</h3>
+          <p>Seu arquivo CSV deve conter as seguintes colunas:</p>
 
-      <div className="upload-instructions">
-        <h3>Diretrizes de Formato CSV</h3>
-        <p>Seu arquivo CSV deve conter as seguintes colunas:</p>
+          {dataType === 'demograficos' ? (
+            <ul>
+              <li><strong>faixa_etaria</strong> - Faixa etária (ex.: "18-25", "26-35")</li>
+              <li><strong>genero</strong> - Gênero</li>
+              <li><strong>cor</strong> - Etnia/raça</li>
+              <li><strong>profissao</strong> - Profissão</li>
+              <li><strong>renda_mensal</strong> - Renda mensal (numérico)</li>
+              <li><strong>quantidade</strong> - Número de pessoas nesta categoria</li>
+            </ul>
+          ) : (
+            <ul>
+              <li><strong>ambiente_nome</strong> - Nome do ambiente de pesca</li>
+              <li><strong>descricao</strong> - Descrição do ambiente</li>
+            </ul>
+          )}
+        </div>
+      </div>
 
-        {dataType === 'demograficos' ? (
-          <ul>
-            <li><strong>faixa_etaria</strong> - Faixa etária (ex.: "18-25", "26-35")</li>
-            <li><strong>genero</strong> - Gênero</li>
-            <li><strong>cor</strong> - Etnia/raça</li>
-            <li><strong>profissao</strong> - Profissão</li>
-            <li><strong>renda_mensal</strong> - Renda mensal (numérico)</li>
-            <li><strong>quantidade</strong> - Número de pessoas nesta categoria</li>
-          </ul>
-        ) : (
-          <ul>
-            <li><strong>ambiente_nome</strong> - Nome do ambiente de pesca</li>
-            <li><strong>descricao</strong> - Descrição do ambiente</li>
-          </ul>
-        )}
+      <div className="upload-section">
+        <LocalityDataUploader />
       </div>
     </div>
   );
