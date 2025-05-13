@@ -14,6 +14,10 @@ on:
       - '!**.md'
   workflow_dispatch:  # Allow manual triggering
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -43,13 +47,17 @@ jobs:
       - name: Start services
         run: |
           docker-compose up -d
-          sleep 30  # Aguardar inicialização dos serviços
+          sleep 60  # Increase wait time for services to initialize
 
       - name: Check container status
         run: docker-compose ps
 
+      - name: Check backend logs
+        run: docker-compose logs backend
+
       - name: Test backend API
         run: |
+          curl -v http://localhost:3001/api/comunidades/stats || true
           curl -s http://localhost:3001/api/comunidades/stats | grep -q "total_municipios" || exit 1
           echo "Backend API respondeu corretamente"
 
