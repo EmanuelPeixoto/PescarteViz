@@ -1,18 +1,49 @@
-name: Docker Image CI
+name: PESCARTE Docker CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend and backend
+        run: |
+          docker-compose build frontend backend
+
+      - name: Adjust PostgreSQL port for CI environment
+        run: |
+          sed -i 's/5432:5432/5435:5432/' docker-compose.yml
+          cat docker-compose.yml
+
+      - name: Start services
+        run: |
+          docker-compose up -d
+          sleep 30  # Aguardar inicialização dos serviços
+
+      - name: Check container status
+        run: docker-compose ps
+
+      - name: Test backend API
+        run: |
+          curl -s http://localhost:3001/api/comunidades/stats | grep -q "total_municipios" || exit 1
+          echo "Backend API respondeu corretamente"
+
+      - name: Test frontend
+        run: |
+          curl -s -I http://localhost:3000 | grep -q "200 OK" || exit 1
+          echo "Frontend está servindo conteúdo corretamente"
+
+      - name: Show logs on failure
+        if: ${{ failure() }}
+        run: docker-compose logs
