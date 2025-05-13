@@ -313,8 +313,8 @@ const CommunitiesDashboard = () => {
                 className="filter-selector"
               >
                 <option value="all">Todas comunidades</option>
-                <option value="high_fishermen">Alto percentual de pescadores (>25%)</option>
-                <option value="large_population">População grande (>1500)</option>
+                <option value="high_fishermen">Alto percentual de pescadores (&gt;25%)</option>
+                <option value="large_population">População grande (&gt;1500)</option>
               </select>
             </div>
           </div>
