@@ -1,0 +1,38 @@
+:root {
+  --pescarte-primary: #004c99;
+  --pescarte-secondary: #f58220;
+  --pescarte-tertiary: #75c5f0;
+}
+
+.swagger-ui .topbar {
+  background-color: var(--pescarte-primary);
+}
+
+.swagger-ui .opblock-tag {
+  border-bottom: 2px solid var(--pescarte-tertiary);
+}
+
+.swagger-ui .opblock.opblock-get {
+  border-color: var(--pescarte-tertiary);
+}
+
+.swagger-ui .btn.execute {
+  background-color: var(--pescarte-primary);
+}
+
+.swagger-ui .opblock-tag-section h3 {
+  color: var(--pescarte-primary);
+}
+
+.swagger-ui .opblock .opblock-summary-method {
+  font-weight: bold;
+}
+
+.swagger-ui section.models h4 {
+  color: var(--pescarte-primary);
+}
+
+.swagger-ui .topbar-wrapper a.link img {
+  content: url('/pescarte_logo-tab.png');
+  height: 40px;
+}

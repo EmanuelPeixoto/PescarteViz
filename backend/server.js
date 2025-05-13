@@ -1,13 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const multer = require('multer');
-const csv = require('csv-parser');
-const fs = require('fs');
-const path = require('path');
-const xlsx = require('xlsx'); // Added xlsx module
-const swaggerJsdoc = require('swagger-jsdoc'); // Added swagger-jsdoc module
-const swaggerUi = require('swagger-ui-express'); // Added swagger-ui-express module
+const express = require("express");
+const cors = require("cors");
+const { Pool } = require("pg");
+const multer = require("multer");
+const csv = require("csv-parser");
+const fs = require("fs");
+const path = require("path");
+const xlsx = require("xlsx"); // Added xlsx module
+const swaggerJsdoc = require("swagger-jsdoc"); // Added swagger-jsdoc module
+const swaggerUi = require("swagger-ui-express"); // Added swagger-ui-express module
 
 // Initialize Express app
 const app = express();
@@ -20,26 +20,26 @@ app.use(express.json());
 // Add API versioning middleware
 const apiVersion = (req, res, next) => {
   // Extract version from header or use default
-  const version = req.headers['api-version'] || '1';
+  const version = req.headers["api-version"] || "1";
   req.apiVersion = version;
   next();
 };
 
-app.use('/api', apiVersion);
+app.use("/api", apiVersion);
 
 // Configure multer for file upload
 const upload = multer({
-  dest: 'uploads/',
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+  dest: "uploads/",
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
 // Database connection
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || "localhost",
   port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER || 'admin',
-  password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'datavizdb'
+  user: process.env.DB_USER || "admin",
+  password: process.env.DB_PASSWORD || "password",
+  database: process.env.DB_NAME || "datavizdb",
 });
 
 // Test database connection with retries
@@ -48,20 +48,24 @@ const testDBConnection = async (retries = 5, delay = 5000) => {
 
   const tryConnection = async () => {
     try {
-      console.log(`Attempting to connect to database (attempt ${attempts + 1}/${retries})...`);
-      const res = await pool.query('SELECT NOW()');
-      console.log('Database connected:', res.rows[0]);
+      console.log(
+        `Attempting to connect to database (attempt ${
+          attempts + 1
+        }/${retries})...`
+      );
+      const res = await pool.query("SELECT NOW()");
+      console.log("Database connected:", res.rows[0]);
       return true;
     } catch (err) {
-      console.error('Database connection error:', err.message);
+      console.error("Database connection error:", err.message);
       attempts++;
 
       if (attempts < retries) {
-        console.log(`Retrying in ${delay/1000} seconds...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.log(`Retrying in ${delay / 1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
         return tryConnection();
       } else {
-        console.error('Max retries reached. Could not connect to database.');
+        console.error("Max retries reached. Could not connect to database.");
         return false;
       }
     }
@@ -75,23 +79,202 @@ testDBConnection();
 // Swagger setup
 const swaggerOptions = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Fishing Communities API',
-      version: '1.0.0',
-      description: 'API for managing fishing community data',
+      title: "API PESCARTE - Visualização de Dados de Comunidades Pesqueiras",
+      version: "1.0.0",
+      description: `
+        API completa para gerenciamento e visualização de dados de comunidades pesqueiras do projeto PESCARTE.
+
+        Esta API permite consultar informações sobre municípios, comunidades pesqueiras, dados demográficos,
+        realizar análises estatísticas, importar dados via CSV e exportar relatórios.
+
+        ## Casos de Uso Principais
+        - Visualização de dados estatísticos por município e comunidade
+        - Importação de dados censitários e demográficos
+        - Análises avançadas (estatísticas, clustering, previsões)
+        - Exportação de dados para relatórios
+      `,
+      contact: {
+        name: "Projeto PESCARTE - UENF",
+        url: "https://pescarte.org.br",
+        email: "contato@pescarte.org.br",
+      },
+      license: {
+        name: "MIT",
+        url: "https://opensource.org/licenses/MIT",
+      },
     },
     servers: [
       {
         url: `http://localhost:${port}/api`,
+        description: "Servidor de desenvolvimento",
+      },
+      {
+        url: "https://api.pescarte.org.br/api",
+        description: "Servidor de produção (simulado)",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+      schemas: {
+        Municipio: {
+          type: "object",
+          required: ["id", "nome", "estado"],
+          properties: {
+            id: {
+              type: "integer",
+              description: "Identificador único do município",
+            },
+            nome: {
+              type: "string",
+              description: "Nome do município",
+            },
+            estado: {
+              type: "string",
+              description: "Sigla do estado (ex: RJ, ES)",
+            },
+            codigo_ibge: {
+              type: "string",
+              description: "Código IBGE do município",
+            },
+            regiao: {
+              type: "string",
+              description: "Nome da região",
+            },
+          },
+        },
+        Comunidade: {
+          type: "object",
+          required: ["id", "nome", "municipio_id"],
+          properties: {
+            id: {
+              type: "integer",
+              description: "Identificador único da comunidade",
+            },
+            nome: {
+              type: "string",
+              description: "Nome da comunidade",
+            },
+            municipio_id: {
+              type: "integer",
+              description: "ID do município ao qual a comunidade pertence",
+            },
+            pessoas: {
+              type: "integer",
+              description: "População total da comunidade",
+            },
+            pescadores: {
+              type: "integer",
+              description: "Número de pescadores na comunidade",
+            },
+            familias: {
+              type: "integer",
+              description: "Número de famílias na comunidade",
+            },
+          },
+        },
+        CensoComunidade: {
+          type: "object",
+          required: ["comunidade_id", "ano_referencia", "pessoas"],
+          properties: {
+            comunidade_id: {
+              type: "integer",
+              description: "ID da comunidade",
+            },
+            ano_referencia: {
+              type: "integer",
+              description: "Ano de referência do censo",
+            },
+            pessoas: {
+              type: "integer",
+              description: "População total",
+            },
+            pescadores: {
+              type: "integer",
+              description: "Total de pescadores",
+            },
+            familias: {
+              type: "integer",
+              description: "Total de famílias",
+            },
+          },
+        },
+        Error: {
+          type: "object",
+          properties: {
+            error: {
+              type: "string",
+            },
+          },
+        },
+      },
+      responses: {
+        NotFound: {
+          description: "O recurso solicitado não foi encontrado",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Error",
+              },
+            },
+          },
+        },
+        ServerError: {
+          description: "Erro interno do servidor",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Error",
+              },
+            },
+          },
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
       },
     ],
   },
-  apis: ['./server.js'], // Path to the API docs
+  apis: ["./server.js"], // Path to the API docs
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Configuração avançada da interface Swagger UI
+const swaggerUiOptions = {
+  explorer: true,
+  customCssUrl: "/swagger-custom.css",
+  customSiteTitle: "API PESCARTE - Documentação",
+  customfavIcon: "/pescarte_logo-tab.png",
+  swaggerOptions: {
+    persistAuthorization: true,
+    docExpansion: "list",
+    filter: true,
+    displayRequestDuration: true,
+    syntaxHighlight: {
+      activate: true,
+      theme: "agate",
+    },
+  },
+};
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocs, swaggerUiOptions)
+);
+
+// Adicione este arquivo CSS personalizado para melhorar a aparência
+app.use(express.static("public"));
 
 // API Routes
 
@@ -101,39 +284,46 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
  * @swagger
  * /api/municipios:
  *   get:
- *     summary: Retrieves all municipalities
- *     description: Returns a list of all municipalities in the database
+ *     summary: Lista todos os municípios
+ *     description: Retorna uma lista de todos os municípios registrados no banco de dados, ordenados alfabeticamente por nome.
+ *     tags: [Municípios]
  *     responses:
  *       200:
- *         description: A list of municipalities
+ *         description: Lista de municípios obtida com sucesso
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     description: Municipality ID
- *                   nome:
- *                     type: string
- *                     description: Municipality name
+ *                 $ref: '#/components/schemas/Municipio'
+ *               example:
+ *                 - id: 1
+ *                   nome: "Arraial do Cabo"
+ *                   estado: "RJ"
+ *                   codigo_ibge: "3300258"
+ *                   regiao: "Lagos"
+ *                 - id: 2
+ *                   nome: "Cabo Frio"
+ *                   estado: "RJ"
+ *                   codigo_ibge: "3300704"
+ *                   regiao: "Lagos"
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
  */
 // Get all municipalities
-app.get('/api/municipios', async (req, res) => {
+app.get("/api/municipios", async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM municipios ORDER BY nome');
+    const result = await pool.query("SELECT * FROM municipios ORDER BY nome");
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching municipalities:', error);
-    res.status(500).send('Server error');
+    console.error("Error fetching municipalities:", error);
+    res.status(500).send("Server error");
   }
 });
 
 // IMPORTANT: Fixed route order - specific routes before parametrized routes
 // Example of versioned endpoint
-app.get('/api/comunidades/summary/municipio', async (req, res) => {
+app.get("/api/comunidades/summary/municipio", async (req, res) => {
   try {
     // First check if the view exists
     const viewCheck = await pool.query(`
@@ -170,43 +360,84 @@ app.get('/api/comunidades/summary/municipio', async (req, res) => {
       `);
     } else {
       // View exists, use it
-      result = await pool.query('SELECT * FROM comunidades_por_municipio');
+      result = await pool.query("SELECT * FROM comunidades_por_municipio");
     }
 
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching community summary:', error);
+    console.error("Error fetching community summary:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
+/**
+ * @swagger
+ * /api/comunidades/details/{id}:
+ *   get:
+ *     summary: Detalhes de uma comunidade
+ *     description: >
+ *       Retorna informações detalhadas sobre uma comunidade específica,
+ *       incluindo dados do município e do censo mais recente.
+ *     tags: [Comunidades]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID da comunidade
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Detalhes da comunidade
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Comunidade'
+ *                 - type: object
+ *                   properties:
+ *                     municipio_nome:
+ *                       type: string
+ *                       description: Nome do município
+ *       404:
+ *         description: Comunidade não encontrada
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
+ */
 // Update the community details endpoint
-app.get('/api/comunidades/details/:id', async (req, res) => {
+app.get("/api/comunidades/details/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
     // Get basic community information
-    const communityResult = await pool.query(`
+    const communityResult = await pool.query(
+      `
       SELECT c.id, c.nome, m.nome as municipio_nome
       FROM comunidades c
       JOIN municipios m ON c.municipio_id = m.id
       WHERE c.id = $1
-    `, [id]);
+    `,
+      [id]
+    );
 
     if (communityResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Community not found' });
+      return res.status(404).json({ error: "Community not found" });
     }
 
     // Get census data separately to avoid failing the whole request
     let censusData = {};
     try {
-      const censusResult = await pool.query(`
+      const censusResult = await pool.query(
+        `
         SELECT pessoas, familias, pescadores
         FROM censo_comunidade
         WHERE comunidade_id = $1
         ORDER BY ano_referencia DESC
         LIMIT 1
-      `, [id]);
+      `,
+        [id]
+      );
 
       if (censusResult.rows.length > 0) {
         censusData = censusResult.rows[0];
@@ -215,7 +446,7 @@ app.get('/api/comunidades/details/:id', async (req, res) => {
         censusData = { pessoas: 0, familias: 0, pescadores: 0 };
       }
     } catch (censusError) {
-      console.error('Error fetching census data:', censusError);
+      console.error("Error fetching census data:", censusError);
       // Provide default values on error
       censusData = { pessoas: 0, familias: 0, pescadores: 0 };
     }
@@ -223,18 +454,57 @@ app.get('/api/comunidades/details/:id', async (req, res) => {
     // Format response with available data
     const result = {
       ...communityResult.rows[0],
-      ...censusData
+      ...censusData,
     };
 
     res.json(result);
   } catch (error) {
-    console.error('Error fetching community details:', error);
+    console.error("Error fetching community details:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
+/**
+ * @swagger
+ * /api/comunidades/{municipioId}:
+ *   get:
+ *     summary: Lista comunidades de um município
+ *     description: >
+ *       Retorna todas as comunidades pertencentes a um município específico.
+ *       Os dados incluem informações do censo mais recente (população, pescadores, famílias).
+ *     tags: [Comunidades]
+ *     parameters:
+ *       - in: path
+ *         name: municipioId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do município
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de comunidades obtida com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comunidade'
+ *       404:
+ *         description: Município não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Município não encontrado"
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
+ */
 // Get communities by municipality (MOVED DOWN because it uses a parameter)
-app.get('/api/comunidades/:municipioId', async (req, res) => {
+app.get("/api/comunidades/:municipioId", async (req, res) => {
   try {
     const { municipioId } = req.params;
     const result = await pool.query(
@@ -251,226 +521,296 @@ app.get('/api/comunidades/:municipioId', async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching communities:', error);
+    console.error("Error fetching communities:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Add API endpoint for CSV data upload (basic structure)
-app.post('/api/upload/csv', async (req, res) => {
+app.post("/api/upload/csv", async (req, res) => {
   // This would require multer or similar for file upload handling
   try {
     // Process CSV file
     // Insert data into appropriate tables
     // Log the import in import_logs table
-    res.status(201).json({ message: 'Data imported successfully' });
+    res.status(201).json({ message: "Data imported successfully" });
   } catch (error) {
-    console.error('Error uploading CSV data:', error);
-    res.status(500).send('Server error during data upload');
+    console.error("Error uploading CSV data:", error);
+    res.status(500).send("Server error during data upload");
   }
 });
 
 // Add API endpoint for CSV demographics data upload
-app.post('/api/upload/csv/demographics', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
+app.post(
+  "/api/upload/csv/demographics",
+  upload.single("file"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-  const { comunidadeId, dataType } = req.body;
+    const { comunidadeId, dataType } = req.body;
 
-  if (!comunidadeId) {
-    return res.status(400).json({ error: 'Community ID is required' });
-  }
+    if (!comunidadeId) {
+      return res.status(400).json({ error: "Community ID is required" });
+    }
 
-  const results = [];
-  const client = await pool.connect();
+    const results = [];
+    const client = await pool.connect();
 
-  try {
-    await client.query('BEGIN');
+    try {
+      await client.query("BEGIN");
 
-    // Log the import start
-    const logResult = await client.query(
-      'INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id',
-      [req.file.originalname, 'processing', 0]
-    );
-    const logId = logResult.rows[0].id;
+      // Log the import start
+      const logResult = await client.query(
+        "INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id",
+        [req.file.originalname, "processing", 0]
+      );
+      const logId = logResult.rows[0].id;
 
-    // Process CSV based on data type
-    fs.createReadStream(req.file.path)
-      .pipe(csv())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
-        try {
-          let recordsImported = 0;
+      // Process CSV based on data type
+      fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on("data", (data) => results.push(data))
+        .on("end", async () => {
+          try {
+            let recordsImported = 0;
 
-          for (const row of results) {
-            // Example for demographic data - adapt based on your CSV structure
-            await client.query(
-              `INSERT INTO demograficos
+            for (const row of results) {
+              // Example for demographic data - adapt based on your CSV structure
+              await client.query(
+                `INSERT INTO demograficos
                (comunidade_id, faixa_etaria, genero, cor, profissao, renda_mensal, quantidade)
                VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-              [comunidadeId, row.faixa_etaria || null, row.genero || null, row.cor || null,
-               row.profissao || null, row.renda_mensal || null, row.quantidade || 0]
-            );
-            recordsImported++;
-          }
-
-          // Update the import log
-          await client.query(
-            'UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3',
-            ['completed', recordsImported, logId]
-          );
-
-          await client.query('COMMIT');
-
-          // Delete the uploaded file
-          fs.unlinkSync(req.file.path);
-
-          res.status(200).json({
-            message: 'CSV data imported successfully',
-            recordsImported
-          });
-        } catch (err) {
-          await client.query('ROLLBACK');
-          await client.query(
-            'UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3',
-            ['failed', err.message, logId]
-          );
-
-          console.error('Error processing CSV:', err);
-          res.status(500).json({ error: 'Failed to process CSV data' });
-        }
-      });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Database transaction error:', err);
-    res.status(500).json({ error: 'Server error during import' });
-  } finally {
-    client.release();
-  }
-});
-
-// Add this endpoint after other import endpoints
-app.post('/api/upload/csv/localities', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const results = [];
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    // Log the import start
-    const logResult = await client.query(
-      'INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id',
-      [req.file.originalname, 'processing', 0]
-    );
-    const logId = logResult.rows[0].id;
-
-    // Process CSV
-    fs.createReadStream(req.file.path)
-      .pipe(csv())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
-        try {
-          let recordsImported = 0;
-
-          for (const row of results) {
-            const { MUNICIPIO, COMUNIDADE, LOCALIDADE } = row;
-
-            if (!MUNICIPIO || !COMUNIDADE || !LOCALIDADE) {
-              continue; // Skip incomplete records
-            }
-
-            // Find the community ID
-            const communityResult = await client.query(
-              `SELECT c.id FROM comunidades c
-               JOIN municipios m ON c.municipio_id = m.id
-               WHERE c.nome = $1 AND m.nome = $2`,
-              [COMUNIDADE.trim(), MUNICIPIO.trim()]
-            );
-
-            if (communityResult.rows.length > 0) {
-              const comunidade_id = communityResult.rows[0].id;
-
-              // Insert locality
-              await client.query(
-                'INSERT INTO localidades (comunidade_id, nome) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-                [comunidade_id, LOCALIDADE.trim()]
+                [
+                  comunidadeId,
+                  row.faixa_etaria || null,
+                  row.genero || null,
+                  row.cor || null,
+                  row.profissao || null,
+                  row.renda_mensal || null,
+                  row.quantidade || 0,
+                ]
               );
-
               recordsImported++;
             }
+
+            // Update the import log
+            await client.query(
+              "UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3",
+              ["completed", recordsImported, logId]
+            );
+
+            await client.query("COMMIT");
+
+            // Delete the uploaded file
+            fs.unlinkSync(req.file.path);
+
+            res.status(200).json({
+              message: "CSV data imported successfully",
+              recordsImported,
+            });
+          } catch (err) {
+            await client.query("ROLLBACK");
+            await client.query(
+              "UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3",
+              ["failed", err.message, logId]
+            );
+
+            console.error("Error processing CSV:", err);
+            res.status(500).json({ error: "Failed to process CSV data" });
           }
-
-          // Update the import log
-          await client.query(
-            'UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3',
-            ['completed', recordsImported, logId]
-          );
-
-          await client.query('COMMIT');
-
-          // Delete the uploaded file
-          fs.unlinkSync(req.file.path);
-
-          res.status(200).json({
-            message: 'Locality data imported successfully',
-            recordsImported
-          });
-        } catch (err) {
-          await client.query('ROLLBACK');
-          await client.query(
-            'UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3',
-            ['failed', err.message, logId]
-          );
-
-          console.error('Error processing locality CSV:', err);
-          res.status(500).json({ error: 'Failed to process locality data' });
-        }
-      });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Database transaction error:', err);
-    res.status(500).json({ error: 'Server error during import' });
-  } finally {
-    client.release();
+        });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("Database transaction error:", err);
+      res.status(500).json({ error: "Server error during import" });
+    } finally {
+      client.release();
+    }
   }
-});
+);
 
 // Add this endpoint after other import endpoints
-app.post('/api/upload/csv/census', upload.single('file'), async (req, res) => {
+app.post(
+  "/api/upload/csv/localities",
+  upload.single("file"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const results = [];
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      // Log the import start
+      const logResult = await client.query(
+        "INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id",
+        [req.file.originalname, "processing", 0]
+      );
+      const logId = logResult.rows[0].id;
+
+      // Process CSV
+      fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on("data", (data) => results.push(data))
+        .on("end", async () => {
+          try {
+            let recordsImported = 0;
+
+            for (const row of results) {
+              const { MUNICIPIO, COMUNIDADE, LOCALIDADE } = row;
+
+              if (!MUNICIPIO || !COMUNIDADE || !LOCALIDADE) {
+                continue; // Skip incomplete records
+              }
+
+              // Find the community ID
+              const communityResult = await client.query(
+                `SELECT c.id FROM comunidades c
+               JOIN municipios m ON c.municipio_id = m.id
+               WHERE c.nome = $1 AND m.nome = $2`,
+                [COMUNIDADE.trim(), MUNICIPIO.trim()]
+              );
+
+              if (communityResult.rows.length > 0) {
+                const comunidade_id = communityResult.rows[0].id;
+
+                // Insert locality
+                await client.query(
+                  "INSERT INTO localidades (comunidade_id, nome) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+                  [comunidade_id, LOCALIDADE.trim()]
+                );
+
+                recordsImported++;
+              }
+            }
+
+            // Update the import log
+            await client.query(
+              "UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3",
+              ["completed", recordsImported, logId]
+            );
+
+            await client.query("COMMIT");
+
+            // Delete the uploaded file
+            fs.unlinkSync(req.file.path);
+
+            res.status(200).json({
+              message: "Locality data imported successfully",
+              recordsImported,
+            });
+          } catch (err) {
+            await client.query("ROLLBACK");
+            await client.query(
+              "UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3",
+              ["failed", err.message, logId]
+            );
+
+            console.error("Error processing locality CSV:", err);
+            res.status(500).json({ error: "Failed to process locality data" });
+          }
+        });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("Database transaction error:", err);
+      res.status(500).json({ error: "Server error during import" });
+    } finally {
+      client.release();
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/upload/csv/census:
+ *   post:
+ *     summary: Importa dados de censo
+ *     description: >
+ *       Importa dados de censo a partir de um arquivo CSV. O formato deve seguir o padrão
+ *       especificado na documentação (comunidade_id, pessoas, familias, pescadores).
+ *     tags: [Upload de Dados]
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: file
+ *         type: file
+ *         required: true
+ *         description: Arquivo CSV com dados do censo
+ *       - in: formData
+ *         name: year
+ *         type: integer
+ *         required: true
+ *         description: Ano de referência do censo
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               year:
+ *                 type: integer
+ *                 example: 2022
+ *     responses:
+ *       200:
+ *         description: Dados importados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Census data for year 2022 imported successfully"
+ *                 recordsImported:
+ *                   type: integer
+ *                   example: 56
+ *       400:
+ *         description: Requisição inválida
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
+ */
+// Add this endpoint after other import endpoints
+app.post("/api/upload/csv/census", upload.single("file"), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    return res.status(400).json({ error: "No file uploaded" });
   }
 
   const { year } = req.body;
   if (!year) {
-    return res.status(400).json({ error: 'Census year is required' });
+    return res.status(400).json({ error: "Census year is required" });
   }
 
   // Parse year to integer
   const yearInt = parseInt(year);
   if (isNaN(yearInt)) {
-    return res.status(400).json({ error: 'Invalid year format' });
+    return res.status(400).json({ error: "Invalid year format" });
   }
 
   const currentYear = new Date().getFullYear();
   if (yearInt < 1990 || yearInt >= currentYear) {
-    return res.status(400).json({ error: `Year must be between 1990 and ${currentYear - 1}` });
+    return res
+      .status(400)
+      .json({ error: `Year must be between 1990 and ${currentYear - 1}` });
   }
 
   const results = [];
   const client = await pool.connect();
 
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     // Get the data source ID
     const dataSourceResult = await client.query(
-      'SELECT id FROM data_sources WHERE name LIKE $1',
+      "SELECT id FROM data_sources WHERE name LIKE $1",
       [`%PESCARTE%`]
     );
 
@@ -478,16 +818,16 @@ app.post('/api/upload/csv/census', upload.single('file'), async (req, res) => {
 
     // Log the import start
     const logResult = await client.query(
-      'INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id',
-      [req.file.originalname, 'processing', 0]
+      "INSERT INTO import_logs (filename, status, records_imported) VALUES ($1, $2, $3) RETURNING id",
+      [req.file.originalname, "processing", 0]
     );
     const logId = logResult.rows[0].id;
 
     // Process CSV
     fs.createReadStream(req.file.path)
       .pipe(csv())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
+      .on("data", (data) => results.push(data))
+      .on("end", async () => {
         try {
           let recordsImported = 0;
 
@@ -500,7 +840,7 @@ app.post('/api/upload/csv/census', upload.single('file'), async (req, res) => {
 
             // Check if the community exists
             const communityResult = await client.query(
-              'SELECT id FROM comunidades WHERE id = $1',
+              "SELECT id FROM comunidades WHERE id = $1",
               [comunidade_id]
             );
 
@@ -525,7 +865,7 @@ app.post('/api/upload/csv/census', upload.single('file'), async (req, res) => {
                 parseInt(pessoas) || 0,
                 parseInt(familias) || 0,
                 parseInt(pescadores) || 0,
-                dataSourceId
+                dataSourceId,
               ]
             );
 
@@ -534,41 +874,39 @@ app.post('/api/upload/csv/census', upload.single('file'), async (req, res) => {
 
           // Update the import log
           await client.query(
-            'UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3',
-            ['completed', recordsImported, logId]
+            "UPDATE import_logs SET status = $1, records_imported = $2 WHERE id = $3",
+            ["completed", recordsImported, logId]
           );
 
-          await client.query('COMMIT');
+          await client.query("COMMIT");
 
           // Delete the uploaded file
           fs.unlinkSync(req.file.path);
 
           res.status(200).json({
             message: `Census data for year ${yearInt} imported successfully`,
-            recordsImported
+            recordsImported,
           });
-
         } catch (err) {
-          await client.query('ROLLBACK');
+          await client.query("ROLLBACK");
           await client.query(
-            'UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3',
-            ['failed', err.message, logId]
+            "UPDATE import_logs SET status = $1, error_message = $2 WHERE id = $3",
+            ["failed", err.message, logId]
           );
 
-          console.error('Error processing census CSV:', err);
-          res.status(500).json({ error: 'Failed to process census data' });
+          console.error("Error processing census CSV:", err);
+          res.status(500).json({ error: "Failed to process census data" });
         }
       });
-
   } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Database transaction error:', err);
-    res.status(500).json({ error: 'Server error during import' });
+    await client.query("ROLLBACK");
+    console.error("Database transaction error:", err);
+    res.status(500).json({ error: "Server error during import" });
   }
 });
 
 // Add debugging route to check database view
-app.get('/api/debug/view/comunidades_por_municipio', async (req, res) => {
+app.get("/api/debug/view/comunidades_por_municipio", async (req, res) => {
   try {
     // Check if the view exists
     const viewCheck = await pool.query(`
@@ -591,21 +929,51 @@ app.get('/api/debug/view/comunidades_por_municipio', async (req, res) => {
     `);
 
     // Try to fetch data
-    const data = await pool.query('SELECT * FROM comunidades_por_municipio');
+    const data = await pool.query("SELECT * FROM comunidades_por_municipio");
 
     res.json({
       viewExists: true,
       columns: columnsCheck.rows,
-      sampleData: data.rows
+      sampleData: data.rows,
     });
   } catch (error) {
-    console.error('Error in debug route:', error);
+    console.error("Error in debug route:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
+/**
+ * @swagger
+ * /api/export/community/{id}:
+ *   get:
+ *     summary: Exporta dados de uma comunidade
+ *     description: >
+ *       Exporta todos os dados de uma comunidade específica,
+ *       incluindo informações básicas e dados demográficos, em formato Excel (.xlsx).
+ *     tags: [Exportação]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID da comunidade
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Arquivo Excel gerado com sucesso
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Comunidade não encontrada
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
+ */
 // Export endpoint for community data
-app.get('/api/export/community/:id', async (req, res) => {
+app.get("/api/export/community/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -619,12 +987,12 @@ app.get('/api/export/community/:id', async (req, res) => {
     );
 
     const demographicsResult = await pool.query(
-      'SELECT * FROM demograficos WHERE comunidade_id = $1',
+      "SELECT * FROM demograficos WHERE comunidade_id = $1",
       [id]
     );
 
     if (communityResult.rows.length === 0) {
-      return res.status(404).send('Community not found');
+      return res.status(404).send("Community not found");
     }
 
     // Format data for export
@@ -636,137 +1004,199 @@ app.get('/api/export/community/:id', async (req, res) => {
 
     // Add basic info sheet
     const basicInfoSheet = xlsx.utils.json_to_sheet([communityData]);
-    xlsx.utils.book_append_sheet(wb, basicInfoSheet, 'Basic Info');
+    xlsx.utils.book_append_sheet(wb, basicInfoSheet, "Basic Info");
 
     // Add demographics sheet if data exists
     if (demographics.length > 0) {
       const demographicsSheet = xlsx.utils.json_to_sheet(demographics);
-      xlsx.utils.book_append_sheet(wb, demographicsSheet, 'Demographics');
+      xlsx.utils.book_append_sheet(wb, demographicsSheet, "Demographics");
     }
 
     // Generate Excel file
-    const excelBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+    const excelBuffer = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
 
     // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename="community_${id}_data.xlsx"`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="community_${id}_data.xlsx"`
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
 
     // Send the file
     res.send(Buffer.from(excelBuffer));
   } catch (error) {
-    console.error('Error exporting community data:', error);
-    res.status(500).send('Server error');
+    console.error("Error exporting community data:", error);
+    res.status(500).send("Server error");
   }
 });
 
 // Export endpoint for municipality data
-app.get('/api/export/municipality/:id', async (req, res) => {
+app.get("/api/export/municipality/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const municipalityResult = await pool.query(
-      'SELECT * FROM municipios WHERE id = $1',
+      "SELECT * FROM municipios WHERE id = $1",
       [id]
     );
 
     const communitiesResult = await pool.query(
-      'SELECT * FROM comunidades WHERE municipio_id = $1',
+      "SELECT * FROM comunidades WHERE municipio_id = $1",
       [id]
     );
 
     if (municipalityResult.rows.length === 0) {
-      return res.status(404).send('Municipality not found');
+      return res.status(404).send("Municipality not found");
     }
 
     // Create workbook with municipality data
     const wb = xlsx.utils.book_new();
-    const municipalitySheet = xlsx.utils.json_to_sheet([municipalityResult.rows[0]]);
-    xlsx.utils.book_append_sheet(wb, municipalitySheet, 'Municipality Info');
+    const municipalitySheet = xlsx.utils.json_to_sheet([
+      municipalityResult.rows[0],
+    ]);
+    xlsx.utils.book_append_sheet(wb, municipalitySheet, "Municipality Info");
 
     // Add communities sheet
     const communitiesSheet = xlsx.utils.json_to_sheet(communitiesResult.rows);
-    xlsx.utils.book_append_sheet(wb, communitiesSheet, 'Communities');
+    xlsx.utils.book_append_sheet(wb, communitiesSheet, "Communities");
 
     // Generate Excel file
-    const excelBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+    const excelBuffer = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
 
     // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename="municipality_${id}_data.xlsx"`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="municipality_${id}_data.xlsx"`
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
 
     // Send the file
     res.send(Buffer.from(excelBuffer));
   } catch (error) {
-    console.error('Error exporting municipality data:', error);
-    res.status(500).send('Server error');
+    console.error("Error exporting municipality data:", error);
+    res.status(500).send("Server error");
   }
 });
 
 // Get all fishing environments
-app.get('/api/ambientes-pesca', async (req, res) => {
+app.get("/api/ambientes-pesca", async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM ambientes_pesca ORDER BY nome');
+    const result = await pool.query(
+      "SELECT * FROM ambientes_pesca ORDER BY nome"
+    );
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching fishing environments:', error);
-    res.status(500).send('Server error');
+    console.error("Error fetching fishing environments:", error);
+    res.status(500).send("Server error");
   }
 });
 
 // Create a new fishing environment
-app.post('/api/ambientes-pesca', async (req, res) => {
+app.post("/api/ambientes-pesca", async (req, res) => {
   try {
     const { nome, descricao } = req.body;
 
     if (!nome) {
-      return res.status(400).json({ error: 'Environment name is required' });
+      return res.status(400).json({ error: "Environment name is required" });
     }
 
     const result = await pool.query(
-      'INSERT INTO ambientes_pesca (nome, descricao) VALUES ($1, $2) RETURNING *',
+      "INSERT INTO ambientes_pesca (nome, descricao) VALUES ($1, $2) RETURNING *",
       [nome, descricao || null]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error creating fishing environment:', error);
-    res.status(500).send('Server error');
+    console.error("Error creating fishing environment:", error);
+    res.status(500).send("Server error");
   }
 });
 
 // Link a fishing environment to a community
-app.post('/api/comunidade-ambiente', async (req, res) => {
+app.post("/api/comunidade-ambiente", async (req, res) => {
   try {
     const { comunidade_id, ambiente_id } = req.body;
 
     if (!comunidade_id || !ambiente_id) {
-      return res.status(400).json({ error: 'Both community ID and environment ID are required' });
+      return res
+        .status(400)
+        .json({ error: "Both community ID and environment ID are required" });
     }
 
     const result = await pool.query(
-      'INSERT INTO comunidade_ambiente (comunidade_id, ambiente_id) VALUES ($1, $2) RETURNING *',
+      "INSERT INTO comunidade_ambiente (comunidade_id, ambiente_id) VALUES ($1, $2) RETURNING *",
       [comunidade_id, ambiente_id]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error linking community and environment:', error);
-    res.status(500).send('Server error');
+    console.error("Error linking community and environment:", error);
+    res.status(500).send("Server error");
   }
 });
 
+/**
+ * @swagger
+ * /api/comunidades/timeseries/{id}:
+ *   get:
+ *     summary: Dados históricos de uma comunidade
+ *     description: >
+ *       Retorna séries históricas de dados censitários para uma comunidade específica,
+ *       organizados por ano de referência.
+ *     tags: [Estatísticas, Comunidades]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID da comunidade
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Dados históricos obtidos com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ano:
+ *                     type: integer
+ *                     description: Ano de referência
+ *                   pessoas:
+ *                     type: integer
+ *                     description: População total
+ *                   pescadores:
+ *                     type: integer
+ *                     description: Número de pescadores
+ *                   familias:
+ *                     type: integer
+ *                     description: Número de famílias
+ *       404:
+ *         description: Comunidade não encontrada
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
+ */
 // Get time series data for a specific community
-app.get('/api/comunidades/timeseries/:id', async (req, res) => {
+app.get("/api/comunidades/timeseries/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
     // First, check if the community exists
     const communityResult = await pool.query(
-      'SELECT nome FROM comunidades WHERE id = $1',
+      "SELECT nome FROM comunidades WHERE id = $1",
       [id]
     );
 
     if (communityResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Community not found' });
+      return res.status(404).json({ error: "Community not found" });
     }
 
     // Get actual historical census data from the database
@@ -802,13 +1232,74 @@ app.get('/api/comunidades/timeseries/:id', async (req, res) => {
 
     res.json(historicalData.rows);
   } catch (error) {
-    console.error('Error fetching time series data:', error);
+    console.error("Error fetching time series data:", error);
     res.status(500).json({ error: error.message }); // Return the specific error message for debugging
   }
 });
 
+/**
+ * @swagger
+ * /api/analytics/statistics:
+ *   get:
+ *     summary: Estatísticas avançadas das comunidades
+ *     description: >
+ *       Fornece estatísticas detalhadas sobre todas as comunidades,
+ *       incluindo médias, desvios padrão, valores extremos e distribuição populacional.
+ *     tags: [Estatísticas]
+ *     responses:
+ *       200:
+ *         description: Estatísticas obtidas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 generalStats:
+ *                   type: object
+ *                   properties:
+ *                     total_communities:
+ *                       type: integer
+ *                       description: Total de comunidades
+ *                     avg_pescadores_perc:
+ *                       type: number
+ *                       format: float
+ *                       description: Percentual médio de pescadores
+ *                     stddev_pescadores_perc:
+ *                       type: number
+ *                       format: float
+ *                       description: Desvio padrão do percentual de pescadores
+ *                     highest_perc_community:
+ *                       type: string
+ *                       description: Comunidade com maior % de pescadores
+ *                     highest_perc_value:
+ *                       type: number
+ *                       format: float
+ *                       description: Valor do maior percentual
+ *                     median_community_size:
+ *                       type: number
+ *                       description: Tamanho mediano das comunidades
+ *                     avg_family_size:
+ *                       type: number
+ *                       format: float
+ *                       description: Tamanho médio das famílias
+ *                 sizeDistribution:
+ *                   type: array
+ *                   description: Distribuição das comunidades por tamanho
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       size_category:
+ *                         type: string
+ *                       community_count:
+ *                         type: integer
+ *                 topCommunitiesByLocalities:
+ *                   type: array
+ *                   description: Top 10 comunidades por número de localidades
+ *       500:
+ *         $ref: '#/components/schemas/ServerError'
+ */
 // Statistical analysis endpoint
-app.get('/api/analytics/statistics', async (req, res) => {
+app.get("/api/analytics/statistics", async (req, res) => {
   try {
     // Replace the complex SQL query with one compatible with your real data schema
     const result = await pool.query(`
@@ -909,16 +1400,16 @@ app.get('/api/analytics/statistics', async (req, res) => {
     res.json({
       generalStats: result.rows[0],
       sizeDistribution: sizeDistribution.rows,
-      topCommunitiesByLocalities: localityCounts.rows
+      topCommunitiesByLocalities: localityCounts.rows,
     });
   } catch (error) {
-    console.error('Error generating analytics:', error);
+    console.error("Error generating analytics:", error);
     res.status(500).json({ error: error.message }); // Return the specific error message for debugging
   }
 });
 
 // Clustering analysis endpoint
-app.get('/api/analytics/clusters', async (req, res) => {
+app.get("/api/analytics/clusters", async (req, res) => {
   try {
     // Modified clustering analysis to work with censo_comunidade table
     const result = await pool.query(`
@@ -969,7 +1460,7 @@ app.get('/api/analytics/clusters', async (req, res) => {
 
     // Count communities in each cluster
     const clusterSummary = {};
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       if (!clusterSummary[row.cluster]) {
         clusterSummary[row.cluster] = 0;
       }
@@ -978,16 +1469,16 @@ app.get('/api/analytics/clusters', async (req, res) => {
 
     res.json({
       clusterAnalysis: result.rows,
-      clusterSummary
+      clusterSummary,
     });
   } catch (error) {
-    console.error('Error generating cluster analysis:', error);
+    console.error("Error generating cluster analysis:", error);
     res.status(500).json({ error: error.message }); // Return the specific error message for debugging
   }
 });
 
 // Predictive analysis endpoint (simplified)
-app.get('/api/analytics/predictions', async (req, res) => {
+app.get("/api/analytics/predictions", async (req, res) => {
   try {
     // Get the actual latest census data
     const currentData = await pool.query(`
@@ -1023,7 +1514,7 @@ app.get('/api/analytics/predictions', async (req, res) => {
           percentage: parseFloat(currentData.rows[0].current_percentage) || 0,
         },
         predictions: [],
-        note: "Insufficient historical data to make predictions."
+        note: "Insufficient historical data to make predictions.",
       });
     }
 
@@ -1036,11 +1527,12 @@ app.get('/api/analytics/predictions', async (req, res) => {
         percentage: parseFloat(currentData.rows[0].current_percentage) || 0,
       },
       historicalData: historicalData.rows,
-      message: "Using only actual historical data. For predictions, consider uploading multiple years of census data."
+      message:
+        "Using only actual historical data. For predictions, consider uploading multiple years of census data.",
     });
   } catch (error) {
-    console.error('Error in predictions endpoint:', error);
-    res.status(500).send('Server error');
+    console.error("Error in predictions endpoint:", error);
+    res.status(500).send("Server error");
   }
 });
 
@@ -1048,12 +1540,42 @@ app.get('/api/analytics/predictions', async (req, res) => {
  * @swagger
  * /api/comunidades/stats:
  *   get:
- *     summary: Retrieves summary statistics about fishing communities
+ *     summary: Estatísticas gerais das comunidades pesqueiras
+ *     description: Retorna estatísticas agregadas como total de pescadores, comunidades, etc.
+ *     tags: [Estatísticas]
  *     responses:
  *       200:
- *         description: Statistics about fishing communities
+ *         description: Estatísticas obtidas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_municipios:
+ *                   type: integer
+ *                   description: Total de municípios
+ *                   example: 12
+ *                 total_comunidades:
+ *                   type: integer
+ *                   description: Total de comunidades pesqueiras
+ *                   example: 56
+ *                 total_pescadores:
+ *                   type: integer
+ *                   description: Total de pescadores registrados
+ *                   example: 5280
+ *                 total_pessoas:
+ *                   type: integer
+ *                   description: População total das comunidades
+ *                   example: 28450
+ *                 percentual_medio_pescadores:
+ *                   type: number
+ *                   format: float
+ *                   description: Percentual médio de pescadores em relação à população total
+ *                   example: 18.5
+ *       500:
+ *         description: Erro no servidor
  */
-app.get('/api/comunidades/stats', async (req, res) => {
+app.get("/api/comunidades/stats", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
@@ -1077,7 +1599,7 @@ app.get('/api/comunidades/stats', async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error fetching community statistics:', error);
+    console.error("Error fetching community statistics:", error);
     res.status(500).json({ error: error.message });
   }
 });
