@@ -47,7 +47,7 @@ jobs:
       - name: Start services
         run: |
           docker-compose up -d
-          sleep 60  # Increase wait time for services to initialize
+          sleep 90  # Increased wait time for services to initialize
 
       - name: Check container status
         run: docker-compose ps
@@ -57,9 +57,20 @@ jobs:
 
       - name: Test backend API
         run: |
-          curl -v http://localhost:3001/api/comunidades/stats || true
-          curl -s http://localhost:3001/api/comunidades/stats | grep -q "total_municipios" || exit 1
-          echo "Backend API respondeu corretamente"
+          # Try several times with delay (API might need time to initialize)
+          for i in {1..5}; do
+            echo "Attempt $i of 5..."
+            response=$(curl -s http://localhost:3001/api/comunidades/stats)
+            echo "$response"
+            if echo "$response" | grep -q "total_municipios"; then
+              echo "Backend API respondeu corretamente"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Failed to get proper response after 5 attempts"
+          exit 1
 
       - name: Test frontend
         run: |
