@@ -1,10 +1,17 @@
 name: Code Quality
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
     branches: ["main"]
+  push:
+    branches: ["main"]
+    paths:
+      - '**.js'
+      - '**.jsx'
+      - '**.json'
+      - '**/package*.json'
+      - '**/.eslintrc*'
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   lint:
