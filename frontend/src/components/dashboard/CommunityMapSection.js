@@ -29,12 +29,10 @@ const CommunityMapSection = () => {
 
   return (
     <div className="dashboard-map-section">
-      <h2>Localização das Comunidades</h2>
       <div className="map-container">
         <CommunitiesMapModule
           communities={communities}
           height="500px"
-          title="Distribuição Geográfica das Comunidades Pesqueiras"
         />
       </div>
     </div>
