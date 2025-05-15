@@ -1,0 +1,85 @@
+.communities-map-module {
+  margin-bottom: 2rem;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+}
+
+.communities-map-module h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.map-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-geo-filter {
+  flex-grow: 1;
+}
+
+.map-search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.map-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+.no-communities-message {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+}
+
+.map-popup h4 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+.popup-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.popup-link:hover {
+  text-decoration: underline;
+}
+
+.dashboard-map-section {
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-map-section h2 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .communities-map-module {
+    padding: 1rem;
+  }
+}

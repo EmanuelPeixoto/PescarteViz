@@ -20,6 +20,8 @@
 }
 
 .chart-container {
+  position: relative;
+  width: 100%;
   height: 350px;
   max-height: 350px;
   overflow: hidden;
@@ -171,6 +173,47 @@ canvas.chartjs-render-monitor {
   height: 350px !important; /* Force minimum height */
   min-height: 350px;
   position: relative;
+}
+
+/* Chart header with controls */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.view-toggle {
+  background: #f0f7ff;
+  border: 1px solid #cce4ff;
+  color: #004c99;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-toggle:hover {
+  background: #e0f0ff;
+}
+
+.view-toggle.active {
+  background: #004c99;
+  color: white;
+  border-color: #004c99;
+}
+
+.view-toggle .icon {
+  font-size: 14px;
 }
 
 /* Responsive adjustments */

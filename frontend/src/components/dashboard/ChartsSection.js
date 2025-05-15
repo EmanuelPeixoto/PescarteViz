@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bar, Pie } from 'react-chartjs-2';
+import React, { useState } from 'react';
+import { Pie, Bar } from 'react-chartjs-2';
 import ResponsiveChart from '../ui/ResponsiveChart';
 
 const ChartsSection = ({
@@ -9,66 +9,32 @@ const ChartsSection = ({
   pieOptions,
   barOptions
 }) => {
-  // Adjust options for mobile/desktop
-  const getResponsiveBarOptions = (dimensions) => {
-    const isMobile = dimensions.width < 576;
+  const [distributionViewType, setDistributionViewType] = useState('pie');
 
-    return {
-      ...barOptions,
-      maintainAspectRatio: false,
-      responsive: true,
-      plugins: {
-        ...barOptions.plugins,
-        legend: {
-          ...barOptions.plugins?.legend,
-          position: isMobile ? 'bottom' : 'top',
-          labels: {
-            ...(barOptions.plugins?.legend?.labels || {}),
-            boxWidth: isMobile ? 10 : 12,
-            padding: isMobile ? 10 : 15,
-            font: {
-              ...(barOptions.plugins?.legend?.labels?.font || {}),
-              size: isMobile ? 10 : 12
-            }
-          }
-        },
-        datalabels: {
-          ...(barOptions.plugins?.datalabels || {}),
-          display: !isMobile, // Hide data labels on mobile
-          font: {
-            ...(barOptions.plugins?.datalabels?.font || {}),
-            size: isMobile ? 8 : 10
-          }
-        }
-      },
-      scales: {
-        ...barOptions.scales,
-        x: {
-          ...barOptions.scales?.x,
-          ticks: {
-            ...(barOptions.scales?.x?.ticks || {}),
-            autoSkip: true,
-            maxRotation: isMobile ? 90 : 45,
-            font: {
-              ...(barOptions.scales?.x?.ticks?.font || {}),
-              size: isMobile ? 9 : 11
-            }
-          }
-        },
-        y: {
-          ...barOptions.scales?.y,
-          ticks: {
-            ...(barOptions.scales?.y?.ticks || {}),
-            font: {
-              ...(barOptions.scales?.y?.ticks?.font || {}),
-              size: isMobile ? 9 : 11
-            }
-          }
-        }
-      }
-    };
+  // Toggle between pie and bar chart for distribution view
+  const toggleDistributionView = () => {
+    setDistributionViewType(distributionViewType === 'pie' ? 'bar' : 'pie');
   };
 
+  // Filter out "outros" category from distribution data
+  const filteredDistributionData = {
+    ...fishermenDistributionData,
+    labels: fishermenDistributionData.labels.filter(label => label !== 'Outros'),
+    datasets: [{
+      ...fishermenDistributionData.datasets[0],
+      data: fishermenDistributionData.datasets[0].data.filter((_, i) =>
+        fishermenDistributionData.labels[i] !== 'Outros'
+      ),
+      backgroundColor: fishermenDistributionData.datasets[0].backgroundColor.filter((_, i) =>
+        fishermenDistributionData.labels[i] !== 'Outros'
+      ),
+      borderColor: fishermenDistributionData.datasets[0].borderColor.filter((_, i) =>
+        fishermenDistributionData.labels[i] !== 'Outros'
+      )
+    }]
+  };
+
+  // Get responsive pie options with adjusted padding to prevent cropping
   const getResponsivePieOptions = (dimensions) => {
     const isMobile = dimensions.width < 576;
 
@@ -76,30 +42,38 @@ const ChartsSection = ({
       ...pieOptions,
       maintainAspectRatio: false,
       responsive: true,
+      layout: {
+        padding: {
+          left: 20,
+          right: 20,
+          top: 10,
+          bottom: 10
+        }
+      },
       plugins: {
         ...pieOptions.plugins,
         legend: {
           ...pieOptions.plugins?.legend,
           position: isMobile ? 'bottom' : 'right',
-          labels: {
-            ...(pieOptions.plugins?.legend?.labels || {}),
-            boxWidth: isMobile ? 10 : 12,
-            padding: isMobile ? 8 : 15,
-            font: {
-              ...(pieOptions.plugins?.legend?.labels?.font || {}),
-              size: isMobile ? 10 : 12
-            }
-          }
         }
       }
+    };
+  };
+
+  // Get responsive bar options
+  const getResponsiveBarOptions = (dimensions) => {
+    return {
+      ...barOptions,
+      maintainAspectRatio: false,
+      responsive: true
     };
   };
 
   return (
     <div className="dashboard-charts">
       <div className="charts-layout">
-        {/* Population by Municipality - Top row, full width on all devices */}
-        <div className="chart-section population-chart">
+        {/* Full width chart - Population by Municipality */}
+        <div className="chart-section">
           <h3 className="chart-title">População por Município</h3>
           <ResponsiveChart
             aspectRatio={dimensions => dimensions.width > 992 ? 2.2 : 1.8}
@@ -117,22 +91,63 @@ const ChartsSection = ({
 
         {/* Bottom row with two charts side by side on desktop, stacked on mobile */}
         <div className="chart-row">
-          {/* Distribution of Fishermen */}
+          {/* Distribution of Fishermen with view toggle */}
           <div className="chart-section fishermen-distribution-chart">
-            <h3 className="chart-title">Distribuição de Pescadores</h3>
-            <ResponsiveChart
-              aspectRatio={dimensions => dimensions.width < 576 ? 1.2 :
-                          dimensions.width < 992 ? 1.5 : 1.1}
-              minHeight={dimensions => dimensions.width > 992 ? 300 : 220}
-              renderChart={(dimensions) => (
-                <Pie
-                  data={fishermenDistributionData}
-                  options={getResponsivePieOptions(dimensions)}
-                  height={dimensions.height}
-                  width={dimensions.width}
-                />
-              )}
-            />
+            <div className="chart-header">
+              <h3 className="chart-title">Distribuição de Pescadores</h3>
+              <div className="chart-controls">
+                <button
+                  className={`view-toggle ${distributionViewType === 'pie' ? 'active' : ''}`}
+                  onClick={toggleDistributionView}
+                  aria-label="Visualizar como gráfico de pizza"
+                >
+                  <span className="icon">🥧</span>
+                </button>
+                <button
+                  className={`view-toggle ${distributionViewType === 'bar' ? 'active' : ''}`}
+                  onClick={toggleDistributionView}
+                  aria-label="Visualizar como gráfico de barras"
+                >
+                  <span className="icon">📊</span>
+                </button>
+              </div>
+            </div>
+            <div className="chart-container">
+              <ResponsiveChart
+                aspectRatio={dimensions => dimensions.width < 576 ? 1.2 :
+                              dimensions.width < 992 ? 1.5 : 1.1}
+                minHeight={dimensions => dimensions.width > 992 ? 300 : 220}
+                renderChart={(dimensions) => (
+                  distributionViewType === 'pie' ? (
+                    <Pie
+                      data={filteredDistributionData}
+                      options={getResponsivePieOptions(dimensions)}
+                      height={dimensions.height}
+                      width={dimensions.width}
+                    />
+                  ) : (
+                    <Bar
+                      data={{
+                        labels: filteredDistributionData.labels,
+                        datasets: [{
+                          label: 'Pescadores',
+                          data: filteredDistributionData.datasets[0].data,
+                          backgroundColor: filteredDistributionData.datasets[0].backgroundColor,
+                          borderColor: filteredDistributionData.datasets[0].borderColor,
+                          borderWidth: 1
+                        }]
+                      }}
+                      options={{
+                        ...getResponsiveBarOptions(dimensions),
+                        indexAxis: 'y'
+                      }}
+                      height={dimensions.height}
+                      width={dimensions.width}
+                    />
+                  )
+                )}
+              />
+            </div>
           </div>
 
           {/* Percentage of Fishermen */}

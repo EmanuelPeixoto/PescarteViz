@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import pescarteLogoBlue from './assets/pescarte_logo.svg';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import CommunityCoordinatesAdmin from './components/admin/CommunityCoordinatesAdmin';
 
 // Code-split your components
 const Dashboard = lazy(() => import("./components/Dashboard"));
@@ -45,6 +46,7 @@ function App() {
                 <Route path="/community/:id" element={<CommunityDetails />} />
                 <Route path="/compare" element={<CommunityComparison />} />
                 <Route path="/analysis" element={<AdvancedAnalysis />} />
+                <Route path="/admin/coordinates" element={<CommunityCoordinatesAdmin />} />
               </Routes>
             </Suspense>
           </main>

@@ -21,6 +21,7 @@ import { useCommunityData } from '../hooks/useCommunityData';
 import StatsSummary from './dashboard/StatsSummary';
 import CommunityAccess from './dashboard/CommunityAccess';
 import ChartsSection from './dashboard/ChartsSection';
+import CommunityMapSection from './dashboard/CommunityMapSection'; // Add this import
 
 // Import utilities
 import {
@@ -29,6 +30,9 @@ import {
   formatPercentageData
 } from '../utils/dataFormatters';
 import { defaultBarOptions, defaultPieOptions } from '../utils/chartUtils';
+
+// Import styles
+import '../styles/pages/maps.css'; // Add this import
 
 // Register ChartJS components
 ChartJS.register(
@@ -152,6 +156,9 @@ const Dashboard = () => {
           barOptions={mobileBarOptions}
         />
       )}
+
+      {/* Add the Map Section */}
+      <CommunityMapSection />
 
       {/* Modular Community Access Component */}
       <CommunityAccess communitiesData={communitiesData} />

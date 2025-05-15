@@ -1,0 +1,46 @@
+const fs = require('fs');
+const { Pool } = require('pg');
+const path = require('path');
+
+// Configuração do banco de dados
+const pool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  user: process.env.DB_USER || 'admin',
+  password: process.env.DB_PASSWORD || 'password',
+  database: process.env.DB_NAME || 'datavizdb',
+});
+
+async function updateCoordinates() {
+  const client = await pool.connect();
+  
+  try {
+    console.log('Iniciando atualização de coordenadas...');
+    
+    // Ler o arquivo SQL
+    const sqlPath = path.join(__dirname, 'update_coordinates.sql');
+    const sqlScript = fs.readFileSync(sqlPath, 'utf8');
+    
+    // Executar o script
+    await client.query('BEGIN');
+    await client.query(sqlScript);
+    await client.query('COMMIT');
+    
+    // Verificar quantas comunidades foram atualizadas
+    const result = await client.query(`
+      SELECT COUNT(*) FROM comunidades 
+      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+    `);
+    
+    console.log(`Coordenadas atualizadas com sucesso para ${result.rows[0].count} comunidades.`);
+    
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao atualizar coordenadas:', error);
+  } finally {
+    client.release();
+    pool.end();
+  }
+}
+
+updateCoordinates();

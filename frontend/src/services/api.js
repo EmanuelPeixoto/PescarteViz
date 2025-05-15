@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { fetchComunidadesSummary } from './communitiesApi';
+import { fetchComunidadesSummary, fetchAllCommunities as fetchAllCommunitiesOriginal } from './communitiesApi';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -20,6 +20,16 @@ export const fetchCommunityStatistics = async () => {
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar estatísticas de comunidades:', error);
+    throw error;
+  }
+};
+
+// Adicionar a função fetchAllCommunities
+export const fetchAllCommunities = async () => {
+  try {
+    return await fetchAllCommunitiesOriginal();
+  } catch (error) {
+    console.error('Erro ao buscar todas as comunidades:', error);
     throw error;
   }
 };

@@ -1,0 +1,55 @@
+-- Definir coordenadas para as comunidades baseadas em seus municípios
+-- Coordenadas aproximadas para os municípios da Bacia de Campos e Espírito Santo
+
+-- Primeiro, vamos criar uma tabela temporária com as coordenadas dos municípios
+CREATE TEMPORARY TABLE municipio_coords (
+    nome VARCHAR(100),
+    lat NUMERIC(10,6),
+    lng NUMERIC(10,6)
+);
+
+-- Inserir coordenadas dos municípios relevantes
+INSERT INTO municipio_coords (nome, lat, lng) VALUES
+    ('Arraial do Cabo', -22.9697, -42.0266),
+    ('Cabo Frio', -22.8894, -42.0286),
+    ('Campos dos Goytacazes', -21.7545, -41.3244),
+    ('Macaé', -22.3768, -41.7869),
+    ('São João da Barra', -21.6381, -41.0511),
+    ('São Francisco de Itabapoana', -21.4704, -41.1120),
+    ('Quissamã', -22.1032, -41.4693),
+    ('Carapebus', -22.1866, -41.6633),
+    ('Casimiro de Abreu', -22.4812, -42.2042),
+    ('Rio das Ostras', -22.5274, -41.9455),
+    ('Armação dos Búzios', -22.7469, -41.8817),
+    ('São Pedro da Aldeia', -22.8430, -42.1028),
+    ('Araruama', -22.8728, -42.3428),
+    ('Saquarema', -22.9201, -42.5099),
+    ('Maricá', -22.9354, -42.8246),
+    ('Niterói', -22.8830, -43.1154),
+    ('Anchieta', -20.8066, -40.6434),
+    ('Piúma', -20.8334, -40.7268),
+    ('Itapemirim', -21.0053, -40.8334),
+    ('Marataízes', -21.0478, -40.8368);
+
+-- Agora, vamos atualizar as comunidades com uma pequena variação nas coordenadas
+-- para distribuí-las dentro dos limites de cada município
+UPDATE comunidades c
+SET 
+    latitude = m.lat + (random() * 0.06 - 0.03),
+    longitude = m.lng + (random() * 0.06 - 0.03)
+FROM municipios mun
+JOIN municipio_coords m ON mun.nome = m.nome
+WHERE c.municipio_id = mun.id;
+
+-- Para comunidades que ainda não têm coordenadas, vamos usar o centro do município
+UPDATE comunidades c
+SET 
+    latitude = m.lat,
+    longitude = m.lng
+FROM municipios mun
+JOIN municipio_coords m ON mun.nome = m.nome
+WHERE c.municipio_id = mun.id
+AND (c.latitude IS NULL OR c.longitude IS NULL);
+
+-- Limpeza
+DROP TABLE municipio_coords;

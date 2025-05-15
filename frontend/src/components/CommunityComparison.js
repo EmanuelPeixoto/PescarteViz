@@ -995,46 +995,6 @@ const CommunityComparison = () => {
                 )}
               </ChartContainer>
             </div>
-
-            {/* Fishing Types Chart */}
-            {fishingTypesData?.datasets?.length > 0 && fishingTypesData.datasets[0]?.data?.length > 0 && (
-              <div className="chart-grid-item full-width">
-                <ChartContainer title="Tipos de Pescadores" isLoading={loading}>
-                  <Doughnut
-                    key={`doughnut-${selectedCommunities.join('-')}`}
-                    data={fishingTypesData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      cutout: '60%',
-                      plugins: {
-                        legend: {
-                          position: 'bottom',
-                          labels: {
-                            padding: 20,
-                            boxWidth: 12,
-                            font: { size: 12 }
-                          }
-                        },
-                        tooltip: {
-                          callbacks: {
-                            label: function(context) {
-                              const label = context.label || '';
-                              const value = context.raw;
-                              const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                              const percentage = Math.round((value / total) * 100);
-                              return `${label}: ${value} (${percentage}%)`;
-                            }
-                          }
-                        }
-                      },
-                      animation: false, // Disable animations
-                      onResize: null // Remove problematic resize handler
-                    }}
-                  />
-                </ChartContainer>
-              </div>
-            )}
           </div>
         </div>
       )}

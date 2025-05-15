@@ -284,10 +284,7 @@ const CommunitiesDashboard = () => {
               ))}
             </select>
 
-            <button className="filter-button" onClick={toggleFilters}>
-              <span className="icon-filter"></span>
-              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </button>
+
           </div>
         </div>
 
@@ -400,9 +397,9 @@ const CommunitiesDashboard = () => {
           {/* Municipality cards section */}
           <div className="municipalities-section">
             <h2>
-              {selectedMunicipio ?
-                `Comunidades em ${municipios.find(m => m.id === parseInt(selectedMunicipio))?.nome || ''}` :
-                'Selecione um município para ver suas comunidades'}
+              {selectedMunicipio
+                ? `Comunidades em ${municipios.find(m => String(m.id) === String(selectedMunicipio))?.nome || 'Município Selecionado'}`
+                : 'Selecione um município para ver suas comunidades'}
             </h2>
 
             {selectedMunicipio ? (

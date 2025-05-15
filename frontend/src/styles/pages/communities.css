@@ -107,7 +107,7 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M472 168H40c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h432c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40zm-40-80H80v32h352v-32zm40 140H40c-22.1 0-40 17.9-40 40v48c0-22.1 17.9-40 40-40h432c22.1 0 40-17.9 40-40v-48c0-22.1-17.9-40-40-40zm-40 80H80v-32h352v32zm40 140H40c-22.1 0-40 17.9-40 40v48c0 22.1 17.9 40 40 40h432c22.1 0 40-17.9 40-40v-48c0-22.1-17.9-40-40-40zm-40 80H80v-32h352v32z"/></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M472 168H40c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h432c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40zm-40-80H80v32h352v-32zm40 140H40c-22.1 0-40 17.9-40 40v48c0-22.1 17.9-40 40-40h432c22.1 0 40-17.9 40-40v-48c0-22.1-17.9-40-40-40zm-40 80H80v-32h352v32zm40 140H40c-22.1 0-40 17.9-40 40v48c0-22.1 17.9-40 40-40h432c22.1 0 40-17.9 40-40v-48c0-22.1-17.9-40-40-40zm-40 80H80v-32h352v32z"/></svg>');
   background-repeat: no-repeat;
   background-size: contain;
   margin-right: 8px;
@@ -319,9 +319,16 @@
 }
 
 .municipalities-section h2 {
-  color: var(--primary-color);
+  color: #0A4281; /* Using a specific blue color instead of var(--primary-color) */
   margin-bottom: 1.5rem;
   font-size: 1.4rem;
+  background-color: #F5F5F5; /* Light gray background for better contrast */
+  padding: 0.75rem;
+  border-radius: 6px;
+  box-shadow: var(--box-shadow);
+  text-align: center;
+  font-weight: 600; /* Make font bolder */
+  border-left: 4px solid #F58220; /* Add an accent border */
 }
 
 .municipalities-overview {
@@ -382,6 +389,34 @@
 
 .select-municipality-button:hover {
   background-color: var(--secondary-color);
+}
+
+/* Municipality card title styles */
+.municipality-title-container {
+  flex: 1;
+}
+
+.municipality-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80%;
+  color: white; /* Ensure text is white */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Add shadow to improve visibility */
+  display: block; /* Ensure proper display */
+}
+
+.municipality-header {
+  background-color: #004c99;
+  color: white;
+  padding: 16px 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* Animation class */

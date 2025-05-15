@@ -328,11 +328,78 @@ INSERT INTO comunidades (nome, municipio_id) VALUES
 ('Beira de Lagoa', (SELECT id FROM municipios WHERE nome = 'Quissamã')),
 ('Centro (Quissamã)', (SELECT id FROM municipios WHERE nome = 'Quissamã'));
 
--- Update geographic coordinates
-UPDATE comunidades SET latitude = -21.7545, longitude = -41.3244 WHERE nome = 'Farol de São Tomé';
-UPDATE comunidades SET latitude = -21.8238, longitude = -41.3247 WHERE nome = 'Lagoa de Cima';
-UPDATE comunidades SET latitude = -21.6434, longitude = -41.0499 WHERE nome = 'Gargaú';
-UPDATE comunidades SET latitude = -21.5083, longitude = -41.0309 WHERE nome = 'Atafona';
+-- Verificar se as colunas latitude e longitude existem na tabela comunidades
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'comunidades' AND column_name = 'latitude') THEN
+        ALTER TABLE comunidades ADD COLUMN latitude NUMERIC(10,6);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'comunidades' AND column_name = 'longitude') THEN
+        ALTER TABLE comunidades ADD COLUMN longitude NUMERIC(10,6);
+    END IF;
+END $$;
+
+-- Criar tabela temporária com as coordenadas dos municípios
+CREATE TEMPORARY TABLE municipio_coords (
+    nome VARCHAR(100),
+    lat NUMERIC(10,6),
+    lng NUMERIC(10,6)
+);
+
+-- Inserir coordenadas dos municípios relevantes
+INSERT INTO municipio_coords (nome, lat, lng) VALUES
+    ('Arraial do Cabo', -22.9697, -42.0266),
+    ('Cabo Frio', -22.8894, -42.0286),
+    ('Campos dos Goytacazes', -21.7545, -41.3244),
+    ('Macaé', -22.3768, -41.7869),
+    ('São João da Barra', -21.6381, -41.0511),
+    ('São Francisco de Itabapoana', -21.4704, -41.1120),
+    ('Quissamã', -22.1032, -41.4693),
+    ('Carapebus', -22.1866, -41.6633),
+    ('Casimiro de Abreu', -22.4812, -42.2042),
+    ('Rio das Ostras', -22.5274, -41.9455),
+    ('Armação dos Búzios', -22.7469, -41.8817),
+    ('São Pedro da Aldeia', -22.8430, -42.1028),
+    ('Araruama', -22.8728, -42.3428),
+    ('Saquarema', -22.9201, -42.5099),
+    ('Maricá', -22.9354, -42.8246),
+    ('Niterói', -22.8830, -43.1154),
+    ('Anchieta', -20.8066, -40.6434),
+    ('Piúma', -20.8334, -40.7268),
+    ('Itapemirim', -21.0053, -40.8334),
+    ('Marataízes', -21.0478, -40.8368);
+
+-- Atualizar comunidades com uma pequena variação nas coordenadas
+-- para distribuí-las dentro dos limites de cada município
+UPDATE comunidades c
+SET
+    latitude = m.lat + (random() * 0.06 - 0.03),
+    longitude = m.lng + (random() * 0.06 - 0.03)
+FROM municipios mun
+JOIN municipio_coords m ON mun.nome = m.nome
+WHERE c.municipio_id = mun.id
+AND (c.latitude IS NULL OR c.longitude IS NULL);
+
+-- Remover a tabela temporária
+DROP TABLE municipio_coords;
+
+-- Verificar resultados
+DO $$
+DECLARE
+    total_communities INTEGER;
+    communities_with_coords INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO total_communities FROM comunidades;
+    SELECT COUNT(*) INTO communities_with_coords FROM comunidades WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
+
+    RAISE NOTICE 'Coordenadas geradas para % de % comunidades (%.2f%%)',
+        communities_with_coords,
+        total_communities,
+        (communities_with_coords::float / total_communities * 100);
+END $$;
 
 -- Insert census data for 2020
 INSERT INTO censo_comunidade (comunidade_id, ano_referencia, pessoas, familias, pescadores, data_source_id) VALUES
@@ -414,15 +481,15 @@ INSERT INTO demograficos (ano_referencia, municipio_id, categoria, subcategoria,
 (2020, (SELECT id FROM municipios WHERE nome = 'Quissamã'), 'genero', 'Feminino', 22.9, 'percentual', 1);
 
 -- Insert professional motivation data
-INSERT INTO motivacao_profissional (ano_referencia, motivo, percentual, data_source_id) VALUES
-(2020, 'Tradição Familiar', 29.3, 1),
-(2020, 'Falta de outro emprego', 27.9, 1),
-(2020, 'Porque gosta', 17.3, 1),
-(2020, 'Bom rendimento', 9.3, 1),
-(2020, 'Ajudar a família', 8.9, 1),
-(2020, 'Não sabe fazer outra coisa', 3.7, 1),
-(2020, 'Pouco estudo', 3.5, 1),
-(2020, 'Problemas de Saúde', 0.2, 1);
+INSERT INTO motivacao_profissional (ano_referencia, motivo, percentual, municipio_id, data_source_id) VALUES
+(2020, 'Tradição Familiar', 29.3, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Falta de outro emprego', 27.9, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Porque gosta', 17.3, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Bom rendimento', 9.3, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Ajudar a família', 8.9, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Não sabe fazer outra coisa', 3.7, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Pouco estudo', 3.5, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1),
+(2020, 'Problemas de Saúde', 0.2, (SELECT id FROM municipios WHERE nome = 'Campos dos Goytacazes'), 1);
 
 -- Insert fisherman type data
 INSERT INTO tipo_pescador (ano_referencia, municipio_id, tipo, percentual, data_source_id) VALUES
