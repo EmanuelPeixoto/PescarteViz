@@ -49,12 +49,6 @@ const Footer = () => {
               <h4>Ferramentas</h4>
               <ul>
                 <li>
-                  <NavLink to="/upload">Importar Dados</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/environments">Ambientes</NavLink>
-                </li>
-                <li>
                   <NavLink to="/analysis">Análise Avançada</NavLink>
                 </li>
               </ul>

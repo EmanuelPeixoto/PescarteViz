@@ -47,20 +47,69 @@ ChartJS.register(
 const Dashboard = () => {
   const { communitiesData, stats, loading, error } = useCommunityData();
   const [chartReady, setChartReady] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+  // Update window width state
   useEffect(() => {
-    // Set a small delay to ensure DOM is ready for charts
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Patch Chart.js resize method
+  useEffect(() => {
+    if (window.Chart) {
+      const originalResize = window.Chart.prototype.resize;
+      window.Chart.prototype.resize = function() {
+        try {
+          if (this.canvas && document.body.contains(this.canvas)) {
+            originalResize.apply(this);
+          }
+        } catch (err) {
+          console.log("Prevented chart resize error");
+        }
+      };
+    }
+  }, []);
+
+  // Set chart ready after loading
+  useEffect(() => {
     if (!loading && communitiesData.length > 0) {
+      // Slightly longer timeout on mobile for smoother rendering
+      const delay = windowWidth < 576 ? 200 : 100;
       setTimeout(() => {
         setChartReady(true);
-      }, 100);
+      }, delay);
     }
-  }, [loading, communitiesData]);
+  }, [loading, communitiesData, windowWidth]);
 
-  // Prepare chart data using formatters
-  const fishermenDistributionData = formatFishermenDistributionData(communitiesData);
-  const populationByMunicipalityData = formatPopulationData(communitiesData);
-  const fishermenPercentageData = formatPercentageData(communitiesData);
+  // Prepare chart data using formatters - Optimize data for mobile if needed
+  const fishermenDistributionData = formatFishermenDistributionData(communitiesData, windowWidth < 576);
+  const populationByMunicipalityData = formatPopulationData(communitiesData, windowWidth < 576);
+  const fishermenPercentageData = formatPercentageData(communitiesData, windowWidth < 576);
+
+  // Modify chart options for mobile
+  const mobileBarOptions = {
+    ...defaultBarOptions,
+    plugins: {
+      ...defaultBarOptions.plugins,
+      datalabels: {
+        ...defaultBarOptions.plugins?.datalabels,
+        display: windowWidth >= 576 // Only show data labels on larger screens
+      }
+    }
+  };
+
+  const mobilePieOptions = {
+    ...defaultPieOptions,
+    plugins: {
+      ...defaultPieOptions.plugins,
+      legend: {
+        ...defaultPieOptions.plugins?.legend,
+        position: windowWidth < 576 ? 'bottom' : 'right'
+      }
+    }
+  };
 
   if (loading) return <div className="loading">Carregando dados do projeto PESCARTE...</div>;
   if (error) return <div className="error-message">Erro: {error}</div>;
@@ -83,10 +132,7 @@ const Dashboard = () => {
             interativas sobre as comunidades pesqueiras da Bacia de Campos e
             Espírito Santo. Através de dashboards dinâmicos, é possível
             visualizar estatísticas demográficas, comparar comunidades e gerar
-            relatórios personalizados. Nossa solução digital promove a
-            transparência de dados, apoia políticas públicas e fortalece a pesca
-            artesanal com visualizações geoespaciais e análises avançadas,
-            contribuindo para a sustentabilidade das comunidades pesqueiras.
+            relatórios personalizados.
           </p>
         </div>
       </div>
@@ -102,8 +148,8 @@ const Dashboard = () => {
           fishermenDistributionData={fishermenDistributionData}
           populationByMunicipalityData={populationByMunicipalityData}
           fishermenPercentageData={fishermenPercentageData}
-          pieOptions={defaultPieOptions}
-          barOptions={defaultBarOptions}
+          pieOptions={mobilePieOptions}
+          barOptions={mobileBarOptions}
         />
       )}
 

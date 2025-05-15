@@ -10,13 +10,8 @@ import ThemeToggle from './components/ThemeToggle';
 const Dashboard = lazy(() => import("./components/Dashboard"));
 const CommunitiesDashboard = lazy(() => import("./components/CommunitiesDashboard"));
 const CommunityDetails = lazy(() => import("./components/CommunityDetails"));
-const DataUploadForm = lazy(() => import("./components/DataUploadForm"));
-const FishingEnvironments = lazy(() => import("./components/FishingEnvironments"));
 const CommunityComparison = lazy(() => import("./components/CommunityComparison"));
 const AdvancedAnalysis = lazy(() => import("./components/AdvancedAnalysis"));
-// Only import and use what's needed
-// const TimeSeriesComparison = lazy(() => import("./components/TimeSeriesComparison"));
-// const CommunitiesTable = lazy(() => import("./components/CommunitiesTable"));
 
 function App() {
   return (
@@ -36,8 +31,6 @@ function App() {
                 <div className="nav-links">
                   <NavLink to="/" end>Dashboard</NavLink>
                   <NavLink to="/communities">Comunidades</NavLink>
-                  <NavLink to="/upload">Importar Dados</NavLink>
-                  <NavLink to="/environments">Ambientes de Pesca</NavLink>
                   <NavLink to="/compare">Comparar Comunidades</NavLink>
                   <NavLink to="/analysis">Análise Avançada</NavLink>
                 </div>
@@ -51,11 +44,8 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/communities" element={<CommunitiesDashboard />} />
                 <Route path="/community/:id" element={<CommunityDetails />} />
-                <Route path="/upload" element={<DataUploadForm />} />
-                <Route path="/environments" element={<FishingEnvironments />} />
                 <Route path="/compare" element={<CommunityComparison />} />
                 <Route path="/analysis" element={<AdvancedAnalysis />} />
-                {/* <Route path="/timeseries" element={<TimeSeriesComparison />} /> */}
               </Routes>
             </Suspense>
           </main>
