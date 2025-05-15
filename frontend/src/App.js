@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, NavLink, Link } from "react-router-dom";
-import "./App.css";
+import "./styles/main.css";
 import Footer from "./components/Footer";
 import pescarteLogoBlue from './assets/pescarte_logo.svg';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -22,7 +22,6 @@ function App() {
             <nav className="main-nav">
               <div className="nav-container">
                 <div className="logo-nav-section">
-                  {/* Use Link instead of a regular anchor to prevent full page refresh */}
                   <Link to="/" className="logo-link">
                     <img src={pescarteLogoBlue} alt="Logo PESCARTE" className="pescarte-logo" />
                     <span className="site-title"></span>

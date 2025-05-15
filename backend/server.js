@@ -1422,10 +1422,10 @@ app.get("/api/analytics/clusters", async (req, res) => {
           cc.pescadores as fishermen,
           cc.familias as families,
           CASE WHEN cc.pessoas > 0 THEN
-            ROUND((cc.pescadores::float / cc.pessoas) * 100, 1)
+            ROUND(((cc.pescadores::float / cc.pessoas) * 100)::numeric, 1)
           ELSE 0 END as fishermen_percentage,
           CASE WHEN cc.familias > 0 THEN
-            ROUND((cc.pessoas::float / cc.familias), 1)
+            ROUND((cc.pessoas::float / cc.familias)::numeric, 1)
           ELSE 0 END as avg_family_size
         FROM
           comunidades c
@@ -1486,7 +1486,7 @@ app.get("/api/analytics/predictions", async (req, res) => {
         MAX(ano_referencia) as latest_year,
         SUM(pessoas) as total_population,
         SUM(pescadores) as total_fishermen,
-        ROUND((SUM(pescadores)::float / NULLIF(SUM(pessoas), 0) * 100), 2) as current_percentage
+        ROUND(((SUM(pescadores)::float / NULLIF(SUM(pessoas), 0)) * 100)::numeric, 2) as current_percentage
       FROM censo_comunidade
       WHERE ano_referencia = (
         SELECT MAX(ano_referencia) FROM censo_comunidade

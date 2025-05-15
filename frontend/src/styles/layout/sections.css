@@ -1,0 +1,117 @@
+/* Layout Section Styles */
+
+.wave-divider {
+  margin: 2rem 0;
+  height: 50px;
+  width: 100%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="%23f5f9ff"></path></svg>');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.section-divider {
+  height: 4px;
+  background: linear-gradient(to right, #004C99, #40A047);
+  margin: 2rem 0;
+  border-radius: 2px;
+}
+
+.community-links-section {
+  margin-top: 3rem;
+  background-color: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+}
+
+.community-links-section h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.community-links-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.demographic-charts {
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 2rem;
+}
+
+.communities-list h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.communities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.extreme-values-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.demographic-comparison-section {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eaeaea;
+}
+
+.demographic-comparison-section h2 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.comparison-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.comparison-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #004c99;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+}
+
+.section-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 22px;
+}

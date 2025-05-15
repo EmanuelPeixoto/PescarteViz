@@ -1,0 +1,457 @@
+/* Communities Page Styles */
+.communities-dashboard {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Controls section */
+.communities-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.communities-controls-container {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+}
+
+.controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.controls-header h2 {
+  color: var(--primary-color);
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* Selection and filtering */
+.selector-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.municipio-selector {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-width: 250px;
+  font-size: 1rem;
+}
+
+.styled-select {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: #fff;
+  min-width: 250px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.styled-select:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 2px rgba(245, 130, 32, 0.2);
+  outline: none;
+}
+
+.filter-toggle {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.filter-toggle:hover {
+  background-color: var(--secondary-color);
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 1rem;
+}
+
+.filter-button:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--primary-color);
+}
+
+.icon-filter {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M472 168H40c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h432c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40zm-40-80H80v32h352v-32zm40 140H40c-22.1 0-40 17.9-40 40v48c0-22.1 17.9-40 40-40h432c22.1 0 40-17.9 40-40v-48c0-22.1-17.9-40-40-40zm-40 80H80v-32h352v32zm40 140H40c-22.1 0-40 17.9-40 40v48c0 22.1 17.9 40 40 40h432c22.1 0 40-17.9 40-40v-48c0-22.1-17.9-40-40-40zm-40 80H80v-32h352v32z"/></svg>');
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-right: 8px;
+}
+
+/* Filter panel and search */
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.filter-panel {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 1.5rem;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 1rem;
+  padding-left: 2.5rem;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23aaa" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-size: 16px;
+}
+
+.filter-options {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-options label {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.filter-selector {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-width: 250px;
+  font-size: 1rem;
+}
+
+/* Charts section */
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.chart-section-wrapper {
+  margin-bottom: 2.5rem;
+}
+
+.chart-section {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+}
+
+.chart-section h2 {
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-size: 1.4rem;
+}
+
+.chart-wrapper {
+  height: 400px;
+  position: relative;
+}
+
+/* Communities grid */
+.communities-list h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.communities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.community-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.community-card:hover {
+  transform: translateY(-5px);
+}
+
+.community-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.3rem;
+}
+
+.community-details {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+}
+
+.community-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.community-header h1 {
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.community-header h2 {
+  color: var(--text-secondary);
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+/* Stats and metrics */
+.community-stats {
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: bold;
+}
+
+.view-button {
+  text-align: center;
+  background-color: var(--accent-color);
+  color: var(--bg-secondary);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.view-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+/* Municipality overviews */
+.municipalities-section {
+  margin-bottom: 2.5rem;
+}
+
+.municipalities-section h2 {
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.municipalities-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.municipality-summary-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.municipality-summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.municipality-summary-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.municipality-stats {
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--bg-primary);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.select-municipality-button {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  margin-top: 0.5rem;
+}
+
+.select-municipality-button:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Animation class */
+.slide-down {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .communities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .municipalities-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .controls-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .selector-container {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .styled-select, .filter-button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .communities-dashboard {
+    padding: 0.5rem;
+  }
+
+  .community-card {
+    padding: 1rem;
+  }
+
+  .chart-section {
+    padding: 1rem;
+  }
+}

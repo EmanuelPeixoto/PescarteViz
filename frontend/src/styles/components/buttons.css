@@ -1,0 +1,233 @@
+/* Button Components */
+
+/* Primary button */
+.button-primary {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button-primary:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary button */
+.button-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  padding: 0.7rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button-secondary:hover {
+  background-color: var(--bg-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Submit button */
+.submit-button {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: 500;
+}
+
+.submit-button:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Filter button */
+.filter-button {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 1rem;
+}
+
+.filter-button:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--primary-color);
+}
+
+/* Filter toggle */
+.filter-toggle {
+  background-color: var(--primary-color);
+  color: var(--bg-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.filter-toggle:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Upload button */
+.upload-button,
+.download-template-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.download-template-button {
+  background-color: var(--secondary-color);
+}
+
+.upload-button:hover,
+.download-template-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.upload-button:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+}
+
+/* PESCARTE special buttons */
+.pescarte-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 8px;
+}
+
+.pescarte-button-primary {
+  background-color: #004C99; /* PESCARTE blue */
+  color: white;
+}
+
+.pescarte-button-primary:hover {
+  background-color: #003b77;
+  transform: translateY(-2px);
+}
+
+.pescarte-button-secondary {
+  background-color: white;
+  color: #004C99;
+  border: 2px solid #004C99;
+}
+
+.pescarte-button-secondary:hover {
+  background-color: #f0f7ff;
+  transform: translateY(-2px);
+}
+
+.pescarte-button-green {
+  background-color: #40A047;
+  color: white;
+}
+
+.pescarte-button-green:hover {
+  background-color: #368c3c;
+  transform: translateY(-2px);
+}
+
+/* Button groups */
+.buttons-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.buttons-group button {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--secondary-color);
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.buttons-group button:hover {
+  background-color: var(--bg-primary);
+}
+
+.buttons-group button.active {
+  background-color: var(--secondary-color);
+  color: var(--bg-secondary);
+}
+
+/* View button and communities */
+.view-button {
+  text-align: center;
+  background-color: var(--accent-color);
+  color: var(--bg-secondary);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.view-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.view-communities-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #004c99;
+  color: white;
+  font-weight: 600;
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 0 0 12px 12px;
+  margin-top: auto;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.view-communities-button:hover {
+  background-color: #005fb8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

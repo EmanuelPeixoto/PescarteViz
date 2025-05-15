@@ -1,0 +1,100 @@
+/* Theme utilities */
+
+.dark-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Card and component theming */
+.dark-theme .stat-card {
+  background-color: #2a3142;
+}
+
+.dark-theme .analysis-section {
+  background-color: #1e2430;
+}
+
+.dark-theme .analysis-controls {
+  background-color: #1e2430;
+}
+
+.dark-theme .stat-badge {
+  background-color: #2a3142;
+}
+
+.dark-theme .communities-controls-container,
+.dark-theme .communities-controls,
+.dark-theme .filter-panel {
+  background-color: #1e2430;
+  border-color: #444;
+}
+
+.dark-theme .chart-section {
+  background-color: #1e2430;
+}
+
+.dark-theme .municipality-summary-card,
+.dark-theme .community-card {
+  background-color: #2a3142;
+  border-color: #444;
+}
+
+/* Tables in dark mode */
+.dark-theme .analytics-table th {
+  background-color: #2a3142;
+}
+
+.dark-theme .analytics-table tr:hover {
+  background-color: #2d3446;
+}
+
+.dark-theme .analytics-table td {
+  border-color: #444;
+}
+
+.dark-theme table th,
+.dark-theme table td {
+  border-color: #444;
+}
+
+.dark-theme table th {
+  background-color: #2a3142;
+}
+
+.dark-theme table tr:hover {
+  background-color: #2d3446;
+}
+
+/* Analysis components */
+.dark-theme .analysis-interpretations {
+  background-color: #2a3142;
+}
+
+.dark-theme .extreme-card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .cluster-card {
+  background-color: #2a3142;
+  border-color: #444;
+}
+
+/* Inputs in dark mode */
+.dark-theme .styled-select,
+.dark-theme .search-input,
+.dark-theme select,
+.dark-theme input {
+  background-color: #2a3142;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-theme .filter-button {
+  background-color: #1e2430;
+  border-color: #444;
+}
+
+.light-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}

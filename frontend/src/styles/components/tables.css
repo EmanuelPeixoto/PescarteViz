@@ -1,0 +1,111 @@
+/* Table Components */
+.table-container {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin-top: 2rem;
+  border-top: 4px solid var(--accent-color);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+table th, table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+table th {
+  background-color: var(--bg-secondary);
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+table tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Table variants */
+.table-striped tbody tr:nth-child(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid var(--border-color);
+}
+
+/* Comparison table */
+.comparison-table {
+  margin-top: 2rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 1.5rem;
+  overflow-x: auto;
+  border-top: 4px solid var(--primary-color);
+}
+
+.comparison-table h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.comparison-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table th {
+  background-color: var(--bg-secondary);
+  color: var(--primary-color);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.comparison-table tr:nth-child(even) {
+  background-color: var(--bg-secondary);
+}
+
+/* Analytics table */
+.table-responsive {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.analytics-table th {
+  background-color: var(--bg-secondary);
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.analytics-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.analytics-table tr:hover {
+  background-color: var(--bg-hover);
+}

@@ -1,0 +1,86 @@
+/* Notification Components */
+
+.message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+
+.success {
+  background-color: var(--success-color);
+  color: var(--bg-secondary);
+  border: 1px solid var(--success-color);
+}
+
+.error {
+  background-color: var(--danger-color);
+  color: var(--bg-secondary);
+  border: 1px solid var(--danger-color);
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  border-radius: var(--border-radius);
+  color: var(--bg-secondary);
+  margin-bottom: 1rem;
+}
+
+.instruction-message {
+  text-align: center;
+  padding: 2rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  margin: 2rem 0;
+  color: var(--text-primary);
+  border-left: 4px solid var(--secondary-color);
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.upload-instructions {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--secondary-color);
+}
+
+.upload-instructions h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.upload-instructions ul {
+  list-style-type: none;
+}
+
+.upload-instructions ul li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.upload-instructions ul li:last-child {
+  border-bottom: none;
+}
+
+.data-source-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 1.5rem;
+}

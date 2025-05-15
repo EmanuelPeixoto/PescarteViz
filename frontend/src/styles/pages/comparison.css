@@ -1,13 +1,6 @@
-/* Enhanced Municipality Selector */
-.municipality-selector {
-  margin-bottom: 2.5rem;
-  background-color: #f8fafc;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  position: relative;
-}
+/* Comparison Page Styles */
 
+/* Enhanced Municipality Selector */
 .municipality-selector,
 .communities-selector {
   margin-bottom: 2rem;
@@ -35,6 +28,7 @@
 
 .municipality-select {
   width: 100%;
+  max-width: 400px;
   padding: 15px 20px;
   font-size: 16px;
   border: 2px solid #e0e0e0;
@@ -52,9 +46,9 @@
 }
 
 .municipality-select:focus {
-  border-color: #004c99;
-  box-shadow: 0 0 0 3px rgba(0, 76, 153, 0.2);
+  border-color: var(--primary-color);
   outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 75, 153, 0.2);
 }
 
 .selector-wrapper::after {
@@ -68,6 +62,7 @@
   font-size: 14px;
 }
 
+/* Selector Title & Header Styling */
 .selector-title {
   display: flex;
   align-items: center;
@@ -133,7 +128,15 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #004C99; /* PESCARTE blue */
+  color: #004C99;
+}
+
+/* Communities grid for checkboxes */
+.communities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
 }
 
 /* Enhanced Communities Selector */
@@ -145,13 +148,6 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: relative;
-}
-
-.communities-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
 }
 
 /* Update community card layout */
@@ -173,9 +169,33 @@
 }
 
 .community-checkbox {
+  background-color: var(--bg-secondary);
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
   margin-right: 10px;
   display: flex;
   align-items: center;
+}
+
+.community-checkbox:hover {
+  background-color: rgba(0, 117, 201, 0.1);
+}
+
+.community-checkbox label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.community-checkbox input {
+  margin-right: 10px;
+  transform: scale(1.2);
+  accent-color: var(--primary-color);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #004C99;
 }
 
 .community-name {
@@ -189,20 +209,6 @@
 
 .community-info {
   flex: 1;
-}
-
-.community-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.community-checkbox input {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: #004C99; /* PESCARTE blue */
 }
 
 .community-metrics {
@@ -258,6 +264,7 @@
   border-radius: 15px;
 }
 
+/* Empty state styling */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -293,43 +300,28 @@
   margin-bottom: 1rem;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Fixed chart layout */
-.comparison-results {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-top: 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-.comparison-results-header {
+/* Comparison charts section */
+.comparison-charts {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #f0f0f0;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.comparison-results-header h2 {
-  color: #004c99;
-  font-size: 1.5rem;
-  margin: 0;
-}
-
-/* Base chart grid */
 .comparison-charts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
   width: 100%;
 }
 
-/* Chart items with proper sizing */
+.chart-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Chart grid items with proper sizing */
 .chart-grid-item {
   position: relative;
   width: 100%;
@@ -337,6 +329,11 @@
 }
 
 .chart-grid-item.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Full-width chart for population data */
+.full-width-chart {
   grid-column: 1 / -1;
 }
 
@@ -352,13 +349,42 @@
   flex-direction: column;
   position: relative;
   min-height: 200px; /* Ensure minimum height */
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.chart-container h3 {
+  padding: 1rem;
+  margin: 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.chart-inner {
+  padding: 1rem;
+}
+
+/* Chart content wrapper */
+.chart-content-wrapper {
+  position: absolute;
+  flex: 1;
+  min-height: 0; /* Critical! */
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
 }
 
 /* Fixed-size header to avoid layout shifts */
 .chart-header {
-  padding: 12px 16px;
-  background-color: #f8fafc;
+  padding: 16px;
   border-bottom: 1px solid #edf2f7;
+  background-color: #f8fafc;
   text-align: center;
   height: 50px;
   display: flex;
@@ -366,6 +392,7 @@
   justify-content: center;
 }
 
+/* Chart title */
 .chart-title {
   margin: 0;
   font-size: 16px;
@@ -377,7 +404,7 @@
   max-width: 100%;
 }
 
-/* Flexible chart body that can grow/shrink */
+/* Chart body */
 .chart-body {
   flex: 1;
   min-height: 0; /* Critical for flexbox! */
@@ -389,104 +416,21 @@
   min-height: 200px; /* Ensure minimum height for charts */
 }
 
-/* Content wrapper that fills available space */
-.chart-content-wrapper {
-  position: absolute;
-  flex: 1;
-  min-height: 0; /* Critical! */
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-}
-
-/* Responsive media queries */
-@media (max-width: 992px) {
-  .comparison-charts-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-grid-item {
-    min-height: 320px;
-  }
-}
-
-/* Smaller devices need shorter charts */
-@media (max-width: 576px) {
-  .chart-grid-item {
-    min-height: 300px;
-  }
-}
-
-/* Mobile responsiveness */
-@media (max-width: 992px) {
-  .comparison-charts-grid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: minmax(350px, auto);
-  }
-}
-
-/* Full-width chart for population data */
-.full-width-chart {
-  grid-column: 1 / -1;
-}
-
-/* Make charts more responsive */
-@media (max-width: 992px) {
-  .chart-row {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-body, .chart-inner {
-    height: 320px;
-  }
-}
-
-/* Improve chart containers to prevent cropping */
-.chart-container {
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.chart-header {
-  padding: 16px;
-  border-bottom: 1px solid #edf2f7;
-  background-color: #f8fafc;
-  text-align: center;
-}
-
-.chart-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #004C99;
-}
-
-.chart-body {
-  padding: 16px;
-  flex-grow: 1;
-  position: relative;
-}
-
+/* Chart loading and errors */
 .chart-loading {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100%;
+  align-items: center;
+  height: 200px;
   padding: 20px;
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(0, 76, 153, 0.1);
   border-radius: 50%;
+  border: 4px solid rgba(0, 0, 0, 0.1);
   border-left-color: #004c99;
   animation: spin 1s linear infinite;
   margin-bottom: 10px;
@@ -497,97 +441,37 @@
   font-size: 14px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 992px) {
-  .chart-row {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-body, .chart-inner {
-    height: 280px;
-  }
+/* Chart controls */
+.chart-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-/* Add responsive styles for mobile */
-@media (max-width: 768px) {
-  .chart-row {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-inner {
-    height: 250px;
-  }
-
-  .comparison-charts-grid {
-    gap: 1rem;
-  }
-
-  .communities-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .comparison-section {
-    padding: 1.5rem;
-  }
-
-  .chart-container {
-    margin-bottom: 1.5rem;
-  }
-
-  .comparison-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .step-label {
-    font-size: 12px;
-  }
-
-  .chart-grid-item {
-    min-height: 300px;
-  }
+.view-mode-selector {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-/* Overall page improvements */
-.comparison-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+.view-mode-btn {
+  padding: 8px 12px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
 }
 
-.comparison-page-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
+.view-mode-btn.active {
+  background: #004c99;
+  color: white;
 }
 
-.comparison-page-header h1 {
-  color: #004C99;
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.comparison-page-header p {
-  color: #666;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.comparison-header {
-  text-align: center;
-  margin-bottom: 28px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.comparison-header h1 {
-  color: #004c99;
-  font-size: 24px;
-  margin: 0;
-}
-
+/* Step indicators for comparison flow */
 .comparison-steps {
   display: flex;
   justify-content: center;
@@ -650,27 +534,67 @@
   text-align: center;
 }
 
-.comparison-container h1 {
-  color: #004c99;
-  font-size: 28px;
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-  padding-bottom: 1rem;
+/* Error message styling */
+.error-message {
+  background-color: #fff3f3;
+  border-left: 4px solid #ff5252;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  color: #d32f2f;
 }
 
-.comparison-container h1::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
+.error-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.retry-button {
+  margin-left: auto;
+  padding: 8px 16px;
+  background-color: #d32f2f;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #b71c1c;
+}
+
+/* Improved step headings */
+.step-heading {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.number-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   background-color: #004c99;
-  border-radius: 2px;
+  color: white;
+  font-weight: bold;
+  margin-right: 10px;
+  font-size: 14px;
 }
 
+.step-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Section styling */
 .comparison-section {
   background: #fff;
   border-radius: 12px;
@@ -708,38 +632,9 @@
 .section-title h2 {
   margin: 0;
   font-size: 22px;
-  color: #004c99;
 }
 
-.chart-controls {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.view-mode-selector {
-  display: flex;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.view-mode-btn {
-  padding: 8px 12px;
-  border: none;
-  background: #f0f0f0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 14px;
-}
-
-.view-mode-btn.active {
-  background: #004c99;
-  color: white;
-}
-
+/* Button styles */
 .comparison-actions {
   display: flex;
   gap: 12px;
@@ -809,135 +704,7 @@
   background: #00387a;
 }
 
-.comparison-results {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 2rem;
-  margin-top: 3rem;
-  box-shadow: 0 5px 20px rgba(0, 76, 153, 0.1);
-  border-top: 5px solid #004c99;
-}
-
-/* Improved action buttons */
-.action-button {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.export-button {
-  background: linear-gradient(to right, #004c99, #0067cc);
-  color: white;
-}
-
-.export-button:hover {
-  background: linear-gradient(to right, #003a75, #0054a9);
-  transform: translateY(-2px);
-}
-
-/* Add error styles */
-
-.error-message {
-  background-color: #fff3f3;
-  border-left: 4px solid #ff5252;
-  padding: 1rem;
-  margin: 1rem 0;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  color: #d32f2f;
-}
-
-.error-icon {
-  font-size: 24px;
-  margin-right: 12px;
-}
-
-.retry-button {
-  margin-left: auto;
-  padding: 8px 16px;
-  background-color: #d32f2f;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.retry-button:hover {
-  background-color: #b71c1c;
-}
-
-/* Improved step headings */
-.step-heading {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.number-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #004c99;
-  color: white;
-  font-size: 18px;
-  margin-right: 12px;
-  font-weight: bold;
-}
-
-.step-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: #004c99;
-}
-
-/* Add step header styles */
-.step-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.step-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #004c99;
-  color: white;
-  font-weight: bold;
-  margin-right: 12px;
-}
-
-.step-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.step-connector {
-  position: relative;
-  margin: 0 0 20px 16px;
-  height: 20px;
-  width: 2px;
-  background-color: #cce4ff;
-}
-
-/* Add PESCARTE button styles */
+/* Enhanced PESCARTE buttons */
 .pescarte-button {
   display: inline-flex;
   align-items: center;
@@ -987,13 +754,95 @@
   font-size: 18px;
 }
 
-/* Enhanced tooltip styling for Chart.js */
+/* Results section */
+.comparison-results {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border-top: 5px solid #004c99;
+}
+
+.comparison-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.comparison-results-header h2 {
+  color: #004c99;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+/* Improved action buttons */
+.action-button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.export-button {
+  background: linear-gradient(to right, #004c99, #0067cc);
+  color: white;
+}
+
+.export-button:hover {
+  background: linear-gradient(to right, #003a75, #0054a9);
+}
+
+/* Step design */
+.step-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #004c99;
+  color: white;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.step-connector {
+  position: relative;
+  margin: 0 0 20px 16px;
+  height: 20px;
+  width: 2px;
+  background-color: #cce4ff;
+}
+
+.step-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #004c99;
+  margin-left: 5px;
+}
+
+/* Enhanced tooltips for Chart.js */
 :root {
   --chart-tooltip-bg: rgba(0, 30, 60, 0.85);
   --chart-tooltip-color: #fff;
 }
 
-/* This will affect Chart.js tooltips globally through CSS variables */
 .chart-tooltip {
   background-color: var(--chart-tooltip-bg) !important;
   color: var(--chart-tooltip-color) !important;
@@ -1009,4 +858,155 @@
   font-weight: bold !important;
   margin-bottom: 4px !important;
   font-size: 14px !important;
+}
+
+/* Overall page improvements */
+.comparison-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.comparison-page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.comparison-page-header h1 {
+  color: #004C99;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.comparison-container h1 {
+  color: #004c99;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.comparison-container h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: #004c99;
+  border-radius: 2px;
+}
+
+.comparison-page-header p {
+  color: #666;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.comparison-header {
+  text-align: center;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.comparison-header h1 {
+  color: #004c99;
+  font-size: 24px;
+  margin: 0;
+}
+
+/* Animation for spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .comparison-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-grid-item {
+    min-height: 320px;
+  }
+
+  .chart-body, .chart-inner {
+    height: 280px;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-inner {
+    height: 250px;
+  }
+
+  .comparison-charts-grid {
+    gap: 1rem;
+  }
+
+  .communities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-section {
+    padding: 1.5rem;
+  }
+
+  .chart-container {
+    margin-bottom: 1.5rem;
+  }
+
+  .comparison-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .step-label {
+    font-size: 12px;
+  }
+
+  .chart-grid-item {
+    min-height: 300px;
+  }
+}
+
+/* Tablet and smaller devices */
+@media (max-width: 576px) {
+  .selector-container {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .styled-select, .filter-button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chartjs-tooltip {
+    white-space: normal;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 400px) {
+  .chart-section {
+    padding: 10px 8px;
+  }
 }

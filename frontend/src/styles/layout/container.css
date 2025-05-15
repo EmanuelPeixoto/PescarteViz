@@ -1,0 +1,31 @@
+/* filepath: c:\Users\danie\Documents\Documents\Faculdade\25-2_estagio\data-viz-project\frontend\src\styles\layout\container.css */
+/* Container Styles */
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section-container {
+  padding: 2rem 0;
+}
+
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+.flex-align-center {
+  align-items: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .section-container {
+    padding: 1.5rem 0;
+  }
+}
