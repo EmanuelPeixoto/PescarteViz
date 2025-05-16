@@ -34,6 +34,7 @@ import { defaultBarOptions, defaultPieOptions, getResponsiveChartOptions } from 
 
 // Import styles
 import '../styles/pages/maps.css';
+import '../styles/components/community-access.css';
 
 // Register ChartJS components
 ChartJS.register(
@@ -131,7 +132,7 @@ const Dashboard = () => {
           />
         </div>
         <div className="pescarte-description">
-          <h1>Monitoramento de Comunidades Pesqueiras</h1>
+          <h1>Monitoramento de Comunidades</h1>
           <p className="slide-up">
             O PESCARTE é um projeto de mitigação ambiental da UENF em parceria
             com a Petrobras. Esta plataforma oferece ferramentas analíticas

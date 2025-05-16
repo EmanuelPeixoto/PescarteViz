@@ -1,0 +1,138 @@
+/* Municipality cards grid layout */
+.municipality-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* View All Card Styling */
+.view-all-container {
+  margin-top: 8px;
+}
+
+.view-all-municipalities-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.view-all-municipalities-card:hover {
+  border-color: #004c99;
+  background: linear-gradient(135deg, #f8fafc 0%, #e6f0fa 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 76, 153, 0.1);
+}
+
+.view-all-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.view-all-icon {
+  background-color: rgba(0, 76, 153, 0.1);
+  color: #004c99;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.view-all-text {
+  flex: 1;
+}
+
+.view-all-text h3 {
+  color: #004c99;
+  font-size: 20px;
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.view-all-text p {
+  color: #64748b;
+  margin: 0;
+  font-size: 14px;
+}
+
+.remaining-badge {
+  display: inline-block;
+  background-color: #004c99;
+  color: white;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.view-all-button {
+  background-color: #004c99;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.view-all-button:hover {
+  background-color: #003a75;
+  text-decoration: none;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .view-all-municipalities-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .view-all-content {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .view-all-text {
+    text-align: center;
+  }
+  
+  .view-all-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Add to the existing municipality card styling */
+.municipality-card {
+  height: 100%;
+}
+
+/* For cases where there are just 1 or 2 municipalities */
+@media (min-width: 992px) {
+  .municipality-cards-grid.only-few {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    max-width: 816px;
+    margin: 0 auto;
+  }
+}
