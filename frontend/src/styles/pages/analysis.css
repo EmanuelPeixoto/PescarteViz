@@ -903,25 +903,37 @@
 /* Cluster Cards Container for Better Responsiveness */
 .cluster-cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-/* Improve Cluster Card Styling */
 .cluster-card {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 100%; /* Ensure equal height */
+  height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: white;
 }
 
 .cluster-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.cluster-card.high {
+  border-top: 4px solid var(--alta-dependencia);
+}
+
+.cluster-card.moderate {
+  border-top: 4px solid var(--dependencia-moderada);
+}
+
+.cluster-card.low {
+  border-top: 4px solid var(--baixa-dependencia);
 }
 
 .cluster-card-header {
@@ -931,6 +943,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .cluster-card-body {
@@ -940,9 +953,26 @@
   flex-direction: column;
 }
 
-.cluster-count-wrapper {
-  text-align: center;
-  margin-bottom: 1.25rem;
+.dependency-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.dependency-badge.high {
+  background-color: var(--alta-dependencia-light);
+  color: var(--alta-dependencia);
+}
+
+.dependency-badge.moderate {
+  background-color: var(--dependencia-moderada-light);
+  color: var(--dependencia-moderada);
+}
+
+.dependency-badge.low {
+  background-color: var(--baixa-dependencia-light);
+  color: var(--baixa-dependencia);
 }
 
 /* Responsive adjustments */
@@ -954,21 +984,18 @@
 
   .dependency-badge {
     align-self: flex-start;
-  }
-
-  .cluster-metrics {
-    padding-top: 0.5rem;
+    margin-top: 0.5rem;
   }
 }
 
-@media (max-width: 480px) {
-  .cluster-count {
-    font-size: 2.5rem;
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .cluster-cards {
+    flex-direction: column;
   }
 
-  .metric-label {
-    min-width: auto;
-    margin-right: 0.5rem;
+  .cluster-card {
+    margin-bottom: 1rem;
   }
 }
 

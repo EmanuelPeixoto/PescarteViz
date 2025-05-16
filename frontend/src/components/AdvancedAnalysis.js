@@ -488,25 +488,40 @@ const AdvancedAnalysis = () => {
         </div>
 
         <div className="cluster-cards-container">
-          {clusterData.clusterAnalysis.map(cluster => {
-            const fishPerc = parseFloat(cluster.fishermen_percentage);
-            const clusterType = classifyCommunityByFishermen(fishPerc, null); // Pass null as communityObj
-            const definition = clusterDefinitions[clusterType];
+          {Object.entries(clusterDefinitions).map(([key, definition]) => {
+            // Find communities that match this dependency type based on thresholds
+            const matchingCommunities = clusterData.communityData.filter(community => {
+              const fishPerc = parseFloat(community.fishermen_percentage);
+              let dependencyType = '';
 
-            console.log(`Renderizando cartão para cluster ${cluster.cluster}, tipo ${clusterType}, classe ${definition.class}`);
+              // Use the same threshold logic as in classifyCommunityByFishermen
+              if (fishPerc > 45) dependencyType = 'alta';
+              else if (fishPerc < 35) dependencyType = 'baixa';
+              else dependencyType = 'moderada';
+
+              return dependencyType === key;
+            });
+
+            // Calculate aggregate stats for this dependency type
+            const communityCount = matchingCommunities.length;
+            const totalPopulation = matchingCommunities.reduce((sum, c) => sum + parseInt(c.population || 0), 0);
+            const totalFishermen = matchingCommunities.reduce((sum, c) => sum + parseInt(c.fishermen || 0), 0);
+            const avgFishermenPerc = communityCount > 0
+              ? (totalFishermen / totalPopulation * 100).toFixed(1)
+              : '0.0';
 
             return (
-              <div key={`cluster-${cluster.cluster}`} className={`cluster-card ${definition.class}`} style={{borderTop: `4px solid ${definition.color}`}}>
+              <div key={`cluster-${key}`} className={`cluster-card ${definition.class}`}>
                 <div className="cluster-card-header">
-                  <h4>Cluster {cluster.cluster}</h4>
+                  <h4>{definition.label}</h4>
                   <div className={`dependency-badge ${definition.class}`}>
-                    {definition.label}
+                    {definition.description}
                   </div>
                 </div>
 
                 <div className="cluster-card-body">
                   <div className="cluster-count-wrapper">
-                    <span className="cluster-count">{cluster.community_count}</span>
+                    <span className="cluster-count">{communityCount}</span>
                     <span className="cluster-count-label">comunidades</span>
                   </div>
 
@@ -514,19 +529,19 @@ const AdvancedAnalysis = () => {
                     <div className="cluster-metric">
                       <span className="metric-icon"><i className="fas fa-users"></i></span>
                       <span className="metric-label">População:</span>
-                      <span className="metric-value">{parseInt(cluster.total_population || 0).toLocaleString('pt-BR')}</span>
+                      <span className="metric-value">{totalPopulation.toLocaleString('pt-BR')}</span>
                     </div>
 
                     <div className="cluster-metric">
                       <span className="metric-icon"><i className="fas fa-fish"></i></span>
                       <span className="metric-label">Pescadores:</span>
-                      <span className="metric-value">{parseInt(cluster.total_fishermen || 0).toLocaleString('pt-BR')}</span>
+                      <span className="metric-value">{totalFishermen.toLocaleString('pt-BR')}</span>
                     </div>
 
                     <div className="cluster-metric">
                       <span className="metric-icon"><i className="fas fa-percentage"></i></span>
                       <span className="metric-label">% Pescadores:</span>
-                      <span className="metric-value">{cluster.fishermen_percentage}%</span>
+                      <span className="metric-value">{avgFishermenPerc}%</span>
                     </div>
                   </div>
                 </div>
