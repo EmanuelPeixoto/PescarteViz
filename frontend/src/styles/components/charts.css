@@ -7,16 +7,13 @@
   overflow: hidden;
 }
 
+/* Common chart container styles */
 .chart-container {
-  position: relative;
-  margin-bottom: 30px;
-  padding: 15px;
+  background-color: #ffffff;
   border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: visible;
-  height: auto;
-  min-height: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 .chart-container {
@@ -175,9 +172,13 @@ canvas.chartjs-render-monitor {
 
 /* Percentage chart specific styling */
 .percentage-chart {
-  height: 350px !important; /* Force minimum height */
-  min-height: 350px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: visible;
+  height: auto !important; /* Remove fixed height */
+  min-height: 0;
+  width: 100%;
 }
 
 /* Chart header with controls */
@@ -270,11 +271,45 @@ canvas.chartjs-render-monitor {
   padding: 16px;
   flex: 1;
   display: flex;
+  flex-direction: column;  /* Changed from default center alignment */
+  position: relative;
+  min-height: 0;  /* Critical for flex children */
+  transition: height 0.3s ease, padding 0.3s ease;
+}
+
+/* Base height for all charts to maintain consistency */
+.chart-grid .chart-card {
+  height: 400px;  /* Set a consistent height for all chart cards */
+}
+
+/* Specific adjustments for different chart types */
+.chart-card-body.pie-chart {
+  justify-content: center;
+  align-items: center;
+  padding: 10px 5px 10px 0;  /* Adjusted padding to prevent legend cutoff */
+}
+
+.chart-card-body.bar-chart {
+  justify-content: center;
+}
+
+.chart-card-body.full-width {
+  min-height: 0;
+  padding-bottom: 20px; /* Extra space for x-axis labels */
+}
+
+/* Full width chart gets more height */
+.chart-grid .full-width {
+  height: 450px;
+}
+
+/* Content containers for charts */
+.chart-content-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  min-height: 0; /* This is crucial for flex children */
-  transition: height 0.3s ease, padding 0.3s ease;
 }
 
 /* Adjust height based on chart type */
@@ -357,6 +392,66 @@ canvas.chartjs-render-monitor {
   padding: 5px;
 }
 
+/* Fishermen Percentage Chart Styles */
+.fishermen-percentage-chart {
+  width: 100%;
+}
+
+.fishermen-percentage-chart .chart-insights {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.fishermen-percentage-chart .insight-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.fishermen-percentage-chart .insight-box {
+  text-align: center;
+  padding: 0.5rem;
+  flex: 1;
+  min-width: 80px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.fishermen-percentage-chart .insight-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #004c99;
+}
+
+.fishermen-percentage-chart .insight-value.highest {
+  color: #dc3545;
+}
+
+.fishermen-percentage-chart .insight-value.lowest {
+  color: #0d6efd;
+}
+
+.fishermen-percentage-chart .insight-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Population Fishermen Comparison Chart Styles */
+.population-fishermen-chart {
+  width: 100%;
+}
+
+.population-fishermen-chart .chart-note {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: right;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
 /* Responsive adjustments */
 @media (min-width: 992px) {
   .chart-section {
@@ -382,7 +477,20 @@ canvas.chartjs-render-monitor {
   }
 }
 
-/* Tablet styles */
+@media (max-width: 768px) {
+  .fishermen-percentage-chart .insight-boxes {
+    flex-direction: row;
+  }
+
+  .fishermen-percentage-chart .insight-value {
+    font-size: 1rem;
+  }
+
+  .fishermen-percentage-chart .insight-label {
+    font-size: 0.7rem;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 991px) {
   .chart-row {
     grid-template-columns: repeat(2, 1fr);
@@ -420,12 +528,11 @@ canvas.chartjs-render-monitor {
   }
 
   .chart-card-body {
-    padding: 12px;
-    min-height: 260px;
+    padding: 10px 12px;
   }
 
   .chart-card-header {
-    padding: 12px 16px;
+    padding: 12px;
   }
 
   .chart-title {
@@ -440,10 +547,34 @@ canvas.chartjs-render-monitor {
   .chart-card-body .chartjs-render-monitor {
     margin: 0 auto;
   }
+
+  .horizontal-bar-container {
+    height: 180px;
+  }
+
+  .gauge-charts-container {
+    gap: 8px;
+  }
+
+  .gauge-chart {
+    max-width: 100px;
+  }
 }
 
-/* Very small screens */
 @media (max-width: 576px) {
+  .chart-container {
+    padding: 0.5rem;
+  }
+
+  .fishermen-percentage-chart .insight-boxes {
+    gap: 0.5rem;
+  }
+
+  .fishermen-percentage-chart .insight-box {
+    padding: 0.25rem;
+    min-width: 60px;
+  }
+
   .chart-row {
     grid-template-columns: 1fr;
   }
@@ -463,6 +594,36 @@ canvas.chartjs-render-monitor {
 
   .chart-title {
     font-size: 15px;
+  }
+
+  .intensity-legend {
+    padding: 6px 8px;
+  }
+
+  .legend-items {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .gauge-charts-container {
+    gap: 10px;
+  }
+
+  .chart-insight-footer {
+    gap: 15px;
+  }
+
+  .insight-box {
+    min-width: 100px;
+    padding: 8px 10px;
+  }
+
+  .insight-value {
+    font-size: 16px;
+  }
+
+  .chart-grid .chart-card {
+    height: 320px;
   }
 }
 
@@ -502,4 +663,138 @@ canvas.chartjs-render-monitor {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Intensity Legend */
+.intensity-legend {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.legend-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+/* Gauge Charts */
+.gauge-charts-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  padding: 0;
+  margin-bottom: 15px;
+}
+
+.gauge-chart {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  max-width: 140px;
+  margin-bottom: 0; /* Remove extra margin */
+}
+
+.gauge-value {
+  position: absolute;
+  top: calc(50% - 10px);
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.gauge-label {
+  font-size: 13px;
+  margin-top: 5px;
+  color: #555;
+  text-align: center;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Additional styling for new percentage visualization */
+.percentage-visualization {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.chart-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 5px 0;
+  opacity: 0.6;
+}
+
+.horizontal-bar-container {
+  width: 100%;
+  height: 230px; /* Fixed height for the bar chart */
+  min-height: 0;
+  flex: 1;
+  position: relative;
+}
+
+.chart-insight-footer {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.insight-box {
+  text-align: center;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  min-width: 120px;
+}
+
+.insight-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #004c99;
+}
+
+.insight-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.chart-explanation {
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+  padding: 8px 0;
+  border-top: 1px solid #edf2f7;
+}
+
+.chart-footer {
+  padding: 0 16px 16px;
 }

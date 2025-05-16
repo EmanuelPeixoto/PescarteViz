@@ -1,0 +1,123 @@
+.fishermen-percentage-chart {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.fishermen-percentage-chart .chart-container {
+  position: relative;
+  width: 100%;
+  min-height: 250px;
+  max-height: 500px;
+}
+
+.fishermen-percentage-chart .chart-insights {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.fishermen-percentage-chart .insight-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-around;
+}
+
+.fishermen-percentage-chart .insight-box {
+  text-align: center;
+  padding: 0.5rem;
+  flex: 1;
+  min-width: 100px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.fishermen-percentage-chart .insight-box:hover {
+  transform: translateY(-2px);
+}
+
+.fishermen-percentage-chart .insight-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #004c99;
+  margin-bottom: 0.25rem;
+}
+
+.fishermen-percentage-chart .insight-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.fishermen-percentage-chart .insight-sublabel {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.fishermen-percentage-chart .highlight-high {
+  color: #dc3545;
+}
+
+.fishermen-percentage-chart .highlight-low {
+  color: #0d6efd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fishermen-percentage-chart .insight-boxes {
+    flex-direction: column;
+  }
+  
+  .fishermen-percentage-chart .insight-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: 0.75rem 1rem;
+  }
+  
+  .fishermen-percentage-chart .insight-value {
+    margin-bottom: 0;
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+  }
+  
+  .fishermen-percentage-chart .insight-label,
+  .fishermen-percentage-chart .insight-sublabel {
+    flex: 1;
+  }
+}
+
+@media (max-width: 576px) {
+  .fishermen-percentage-chart {
+    padding: 0.75rem;
+  }
+  
+  .fishermen-percentage-chart .insight-boxes {
+    flex-direction: row;
+  }
+  
+  .fishermen-percentage-chart .insight-box {
+    flex-direction: column;
+    text-align: center;
+    min-width: 70px;
+    padding: 0.5rem;
+  }
+  
+  .fishermen-percentage-chart .insight-value {
+    margin-right: 0;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+  }
+}

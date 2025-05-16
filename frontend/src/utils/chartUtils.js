@@ -147,3 +147,61 @@ export const getResponsiveChartOptions = (dimensions, baseOptions = {}) => {
 
   return responsiveOptions;
 };
+
+// PESCARTE brand color palette with extensions
+export const chartColors = {
+  // Primary data categories
+  population: {
+    main: 'rgba(0, 76, 153, 0.8)', // PESCARTE blue
+    light: 'rgba(0, 76, 153, 0.6)',
+    dark: 'rgba(0, 76, 153, 1)'
+  },
+  fishermen: {
+    main: 'rgba(245, 130, 32, 0.8)', // PESCARTE orange
+    light: 'rgba(245, 130, 32, 0.6)',
+    dark: 'rgba(245, 130, 32, 1)'
+  },
+  percentage: {
+    main: 'rgba(123, 104, 238, 0.8)', // More vibrant purple
+    light: 'rgba(123, 104, 238, 0.6)',
+    dark: 'rgba(123, 104, 238, 1)',
+    // Gradient based on value (for municipalities with high/low percentages)
+    low: 'rgba(123, 104, 238, 0.6)',
+    medium: 'rgba(123, 104, 238, 0.75)',
+    high: 'rgba(123, 104, 238, 0.9)'
+  },
+
+  // Pie chart segments (expanded with better contrast)
+  categories: [
+    'rgba(0, 76, 153, 0.8)',    // PESCARTE blue
+    'rgba(245, 130, 32, 0.8)',   // PESCARTE orange
+    'rgba(64, 160, 71, 0.8)',    // PESCARTE green
+    'rgba(117, 197, 240, 0.8)',  // Light blue
+    'rgba(255, 114, 94, 0.8)',   // Coral
+    'rgba(156, 39, 176, 0.8)',   // Purple
+    'rgba(255, 193, 7, 0.8)'     // Amber
+  ],
+
+  // Color mapping for municipalities (for special cases where needed)
+  municipalities: {
+    'Arraial do Cabo': 'rgba(0, 76, 153, 0.8)', // Use blue shade for consistency
+    'Cabo Frio': 'rgba(0, 101, 204, 0.8)',
+    'Campos dos Goytacazes': 'rgba(0, 127, 255, 0.8)',
+    // Add others if needed for specific visualizations
+  }
+};
+
+// Helper function to get border colors from fill colors
+export const getBorderColor = (fillColor) => {
+  return fillColor.replace(/[\d.]+\)$/, '1)');
+};
+
+// Get a color scale for percentage values
+export const getPercentageColor = (percentage) => {
+  if (percentage >= 40) {
+    return chartColors.percentage.high;
+  } else if (percentage >= 25) {
+    return chartColors.percentage.medium;
+  }
+  return chartColors.percentage.low;
+};

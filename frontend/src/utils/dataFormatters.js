@@ -1,3 +1,5 @@
+import { chartColors, getBorderColor, getPercentageColor } from './chartUtils';
+
 export const formatFishermenDistributionData = (communitiesData, isMobile = false) => {
   // Sort data by number of fishermen (descending)
   const sortedData = [...communitiesData].sort((a, b) =>
@@ -38,21 +40,6 @@ export const formatFishermenDistributionData = (communitiesData, isMobile = fals
     data.push(otherSum);
   }
 
-  // Custom colors with PESCARTE palette that work well for colorblind users
-  const backgroundColors = [
-    'rgba(0, 76, 153, 0.8)',     // PESCARTE blue
-    'rgba(245, 130, 32, 0.8)',    // PESCARTE orange
-    'rgba(64, 160, 71, 0.8)',     // PESCARTE green
-    'rgba(117, 197, 240, 0.8)',   // Light blue
-    'rgba(153, 102, 255, 0.8)',   // Purple
-    'rgba(255, 159, 64, 0.8)',    // Light orange
-    'rgba(128, 128, 128, 0.8)',   // Gray for "Others"
-  ];
-
-  const borderColors = backgroundColors.map(color =>
-    color.replace('0.8', '1')
-  );
-
   // Include the original items in each category for detailed tooltips
   const groupDetails = {};
   smallCategories.forEach(item => {
@@ -70,8 +57,8 @@ export const formatFishermenDistributionData = (communitiesData, isMobile = fals
       {
         label: 'Pescadores por Município',
         data: data,
-        backgroundColor: backgroundColors,
-        borderColor: borderColors,
+        backgroundColor: chartColors.categories.slice(0, labels.length),
+        borderColor: chartColors.categories.slice(0, labels.length).map(getBorderColor),
         borderWidth: 1,
         // Add original data for interactive tooltips
         groupDetails: smallCategories.length > 0 ? groupDetails : null
@@ -92,18 +79,18 @@ export const formatPopulationData = (communitiesData) => {
       {
         label: 'População Total',
         data: communitiesData.map(item => parseInt(item.total_pessoas) || 0),
-        backgroundColor: 'rgba(0, 117, 201, 0.6)',
-        borderColor: 'rgba(0, 117, 201, 1)',
+        backgroundColor: chartColors.population.light,
+        borderColor: chartColors.population.dark,
         borderWidth: 1,
       },
       {
         label: 'Pescadores',
         data: communitiesData.map(item => parseInt(item.total_pescadores) || 0),
-        backgroundColor: 'rgba(245, 130, 32, 0.6)',
-        borderColor: 'rgba(245, 130, 32, 1)',
+        backgroundColor: chartColors.fishermen.light,
+        borderColor: chartColors.fishermen.dark,
         borderWidth: 1,
       }
-    ],
+    ]
   };
 };
 
@@ -123,20 +110,9 @@ export const formatPercentageData = (communitiesData, isMobile = false) => {
   // Sort the data by percentage in descending order
   percentageData.sort((a, b) => b.percentage - a.percentage);
 
-  // Use a color gradient based on percentage values
-  const getColorByPercentage = (percentage) => {
-    // Higher percentages get stronger colors
-    const intensity = 0.5 + (percentage / 100) * 0.5;
-    return `rgba(153, 102, 255, ${intensity})`;
-  };
-
-  const backgroundColors = percentageData.map(item =>
-    getColorByPercentage(item.percentage)
-  );
-
-  const borderColors = backgroundColors.map(color =>
-    color.replace(/[\d.]+\)$/, '1)')
-  );
+  // Use intensity-based colors for meaningful color variations
+  const backgroundColors = percentageData.map(item => getPercentageColor(item.percentage));
+  const borderColors = backgroundColors.map(color => getBorderColor(color));
 
   return {
     labels: percentageData.map(item => item.municipio),

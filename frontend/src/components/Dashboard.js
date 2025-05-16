@@ -12,6 +12,7 @@ import {
   PointElement
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import pescarteLogoBlue from '../assets/pescarte_logo.svg';
 
 // Import custom hooks
@@ -30,7 +31,12 @@ import {
   formatPopulationData,
   formatPercentageData
 } from '../utils/dataFormatters';
-import { defaultBarOptions, defaultPieOptions, getResponsiveChartOptions } from '../utils/chartUtils'; // Add this import
+import {
+  defaultBarOptions,
+  defaultPieOptions,
+  getResponsiveChartOptions,
+  chartColors  // Add this import
+} from '../utils/chartUtils'; // Add this import
 
 // Import styles
 import '../styles/pages/maps.css';
@@ -47,7 +53,8 @@ ChartJS.register(
   Title,
   LineElement,
   PointElement,
-  ChartDataLabels
+  ChartDataLabels,
+  annotationPlugin
 );
 
 const Dashboard = () => {
@@ -163,10 +170,12 @@ const Dashboard = () => {
             fishermenDistributionData={fishermenDistributionData}
             populationByMunicipalityData={populationByMunicipalityData}
             fishermenPercentageData={fishermenPercentageData}
+            communitiesData={communitiesData} // Add this prop
             pieOptions={mobilePieOptions}
             barOptions={mobileBarOptions}
             windowWidth={windowWidth}
             getResponsiveChartOptions={getResponsiveChartOptions}
+            chartColors={chartColors}
           />
         )}
       </div>

@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { Pie, Bar } from 'react-chartjs-2';
-import ResponsiveChart from '../ui/ResponsiveChart';
+import React, { useState, useRef, useEffect } from 'react';
+import { Bar, Pie } from 'react-chartjs-2';
+import FishermenPercentageChart from '../charts/FishermenPercentageChart';
+import useResizeObserver from '../../hooks/useResizeObserver';
+
+// Import new CSS
+import '../../styles/components/fishermen-percentage-chart.css';
 
 const ChartsSection = ({
   fishermenDistributionData,
@@ -8,160 +12,118 @@ const ChartsSection = ({
   fishermenPercentageData,
   pieOptions,
   barOptions,
-  windowWidth
+  windowWidth,
+  getResponsiveChartOptions,
+  chartColors
 }) => {
-  const [distributionViewType, setDistributionViewType] = useState('pie');
+  const [chartDimensions, setChartDimensions] = useState({
+    width: 0,
+    height: 0
+  });
 
-  // Toggle between pie and bar chart for distribution view
-  const toggleDistributionView = () => {
-    setDistributionViewType(distributionViewType === 'pie' ? 'bar' : 'pie');
-  };
+  const chartGridRef = useRef(null);
 
-  // Filter out "outros" category from distribution data
-  const filteredDistributionData = {
-    ...fishermenDistributionData,
-    labels: fishermenDistributionData.labels.filter(label => label !== 'Outros'),
-    datasets: [{
-      ...fishermenDistributionData.datasets[0],
-      data: fishermenDistributionData.datasets[0].data.filter((_, i) =>
-        fishermenDistributionData.labels[i] !== 'Outros'
-      ),
-      backgroundColor: fishermenDistributionData.datasets[0].backgroundColor.filter((_, i) =>
-        fishermenDistributionData.labels[i] !== 'Outros'
-      ),
-      borderColor: fishermenDistributionData.datasets[0].borderColor.filter((_, i) =>
-        fishermenDistributionData.labels[i] !== 'Outros'
-      )
-    }]
-  };
+  // Use resize observer to get chart container dimensions
+  const dimensions = useResizeObserver(chartGridRef);
 
-  // Get responsive pie options with adjusted padding to prevent cropping
-  const getResponsivePieOptions = (dimensions) => {
-    const isMobile = dimensions.width < 576;
+  useEffect(() => {
+    if (dimensions) {
+      setChartDimensions(dimensions);
+    }
+  }, [dimensions]);
 
+  // Get responsive options based on dimensions
+  const getResponsiveBarOptions = (dimensions) => {
     return {
-      ...pieOptions,
+      ...barOptions,
       maintainAspectRatio: false,
-      responsive: true,
-      layout: {
-        padding: {
-          left: 20,
-          right: 20,
-          top: 10,
-          bottom: 10
+      plugins: {
+        ...barOptions.plugins,
+        legend: {
+          ...barOptions.plugins?.legend,
+          display: dimensions?.width > 400,
+          position: dimensions?.width < 500 ? 'bottom' : 'top',
+          labels: {
+            boxWidth: dimensions?.width < 500 ? 10 : 15,
+            font: { size: dimensions?.width < 500 ? 10 : 12 }
+          }
+        },
+        datalabels: {
+          ...barOptions.plugins?.datalabels,
+          display: dimensions?.width > 350,
+          font: { size: dimensions?.width < 500 ? 9 : 10 }
         }
       },
-      plugins: {
-        ...pieOptions.plugins,
-        legend: {
-          ...pieOptions.plugins?.legend,
-          position: isMobile ? 'bottom' : 'right',
+      scales: {
+        ...barOptions.scales,
+        y: {
+          ...barOptions.scales?.y,
+          ticks: {
+            ...barOptions.scales?.y?.ticks,
+            font: { size: dimensions?.width < 500 ? 9 : 11 }
+          }
+        },
+        x: {
+          ...barOptions.scales?.x,
+          ticks: {
+            ...barOptions.scales?.x?.ticks,
+            font: { size: dimensions?.width < 500 ? 9 : 11 }
+          }
         }
       }
     };
   };
 
-  // Get responsive bar options
-  const getResponsiveBarOptions = (dimensions) => {
-    return {
-      ...barOptions,
-      maintainAspectRatio: false,
-      responsive: true
-    };
-  };
+  // Responsive layout based on screen width
+  const layoutClasses = windowWidth < 992
+    ? "chart-grid chart-grid-stacked"
+    : "chart-grid chart-grid-3-columns";
 
   return (
-    <div className="dashboard-charts">
-      <div className="chart-grid">
-        {/* Main chart - takes full width */}
-        <div className="chart-card full-width">
-          <div className="chart-card-header">
-            <h3 className="chart-title">População por Município</h3>
-
-          </div>
-          <div className="chart-card-body full-width">
-            <ResponsiveChart
-              chartType="full-width-bar"
-              minHeight={windowWidth < 768 ? 280 : 320}
-              renderChart={dimensions => (
-                <Bar
-                  data={populationByMunicipalityData}
-                  options={getResponsiveBarOptions(dimensions)}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Two equal width charts with optimized containers */}
+    <div className="charts-section">
+      <div className={layoutClasses} ref={chartGridRef}>
+        {/* Distribution Chart */}
         <div className="chart-card">
           <div className="chart-card-header">
             <h3 className="chart-title">Distribuição de Pescadores</h3>
-            <div className="chart-view-toggle">
-              <button
-                className={`toggle-btn ${distributionViewType === 'pie' ? 'active' : ''}`}
-                onClick={() => setDistributionViewType('pie')}
-                aria-label="Visualizar como gráfico de pizza"
-              >
-                <i className="fas fa-chart-pie"></i>
-              </button>
-              <button
-                className={`toggle-btn ${distributionViewType === 'bar' ? 'active' : ''}`}
-                onClick={() => setDistributionViewType('bar')}
-                aria-label="Visualizar como gráfico de barras"
-              >
-                <i className="fas fa-chart-bar"></i>
-              </button>
-            </div>
           </div>
-          <div className={`chart-card-body ${distributionViewType === 'pie' ? 'pie-chart' : 'bar-chart'}`}>
-            <ResponsiveChart
-              chartType={distributionViewType}
-              minHeight={windowWidth > 992 ? 300 : 260}
-              renderChart={(dimensions) => (
-                distributionViewType === 'pie' ? (
-                  <Pie
-                    data={filteredDistributionData}
-                    options={getResponsivePieOptions(dimensions)}
-                  />
-                ) : (
-                  <Bar
-                    data={{
-                      labels: filteredDistributionData.labels,
-                      datasets: [{
-                        label: 'Pescadores',
-                        data: filteredDistributionData.datasets[0].data,
-                        backgroundColor: filteredDistributionData.datasets[0].backgroundColor,
-                        borderColor: filteredDistributionData.datasets[0].borderColor,
-                        borderWidth: 1
-                      }]
-                    }}
-                    options={{
-                      ...getResponsiveBarOptions(dimensions),
-                      indexAxis: 'y'
-                    }}
-                  />
-                )
-              )}
-            />
+          <div className="chart-card-body">
+            <Pie data={fishermenDistributionData} options={pieOptions} />
+          </div>
+          <div className="chart-explanation">
+            Distribuição do número total de pescadores por município
           </div>
         </div>
 
+        {/* Population Chart */}
         <div className="chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-title">Percentual de Pescadores</h3>
+            <h3 className="chart-title">População por Município</h3>
           </div>
-          <div className="chart-card-body bar-chart">
-            <ResponsiveChart
-              chartType="bar"
-              minHeight={windowWidth > 992 ? 300 : 260}
-              renderChart={(dimensions) => (
-                <Bar
-                  data={fishermenPercentageData}
-                  options={getResponsiveBarOptions(dimensions)}
-                />
-              )}
+          <div className="chart-card-body">
+            <Bar
+              data={populationByMunicipalityData}
+              options={getResponsiveBarOptions(chartDimensions)}
             />
+          </div>
+          <div className="chart-explanation">
+            População total e número de pescadores por município
+          </div>
+        </div>
+
+        {/* Percentage Chart - Using new component */}
+        <div className="chart-card">
+          <div className="chart-card-header">
+            <h3 className="chart-title">Percentual de Pescadores por Município</h3>
+          </div>
+          <div className="chart-card-body percentage-chart">
+            <FishermenPercentageChart
+              data={fishermenPercentageData}
+              windowWidth={windowWidth}
+            />
+          </div>
+          <div className="chart-explanation">
+            Proporção de pescadores em relação à população total por município
           </div>
         </div>
       </div>
