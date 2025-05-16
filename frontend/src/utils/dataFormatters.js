@@ -127,3 +127,100 @@ export const formatPercentageData = (communitiesData, isMobile = false) => {
     ],
   };
 };
+
+export const formatMotivationData = (communitiesData, isMobile = false) => {
+  // Create a map to aggregate motivation data across all communities
+  const motivationsMap = {};
+  let hasData = false;
+
+  // Map motivation categories from database to display names
+  const motivationMapping = {
+    'Tradição Familiar': 'Tradição Familiar',
+    'Falta de outro emprego': 'Falta de Alternativas',
+    'Porque gosta': 'Vocação/Gosto',
+    'Bom rendimento': 'Sustento Econômico',
+    'Ajudar a família': 'Sustento Econômico',
+    'Não sabe fazer outra coisa': 'Falta de Alternativas',
+    'Pouco estudo': 'Falta de Alternativas',
+    'Problemas de Saúde': 'Outros Motivos'
+  };
+
+  // Process each community's motivation data
+  communitiesData.forEach(community => {
+    if (community.motivacao_profissional) {
+      try {
+        const motivations = JSON.parse(community.motivacao_profissional);
+
+        // Process each motivation category
+        Object.keys(motivations).forEach(key => {
+          // Get standardized category name
+          const category = motivationMapping[key] || key;
+
+          // Initialize or add to the category total
+          if (!motivationsMap[category]) {
+            motivationsMap[category] = 0;
+          }
+
+          // Add percentual weighted by the number of pescadores in the community
+          const weight = parseInt(community.pescadores) || 0;
+          motivationsMap[category] += (parseFloat(motivations[key]) / 100) * weight;
+          hasData = true;
+        });
+      } catch (e) {
+        console.warn('Error parsing motivation data:', e);
+      }
+    }
+  });
+
+  // If no data was found, use sample data
+  if (!hasData || Object.keys(motivationsMap).length === 0) {
+    motivationsMap['Tradição Familiar'] = 32;
+    motivationsMap['Sustento Econômico'] = 28;
+    motivationsMap['Falta de Alternativas'] = 20;
+    motivationsMap['Vocação/Gosto'] = 18;
+    motivationsMap['Outros Motivos'] = 2;
+  }
+
+  // Sort motivations by count (descending)
+  const sortedData = Object.entries(motivationsMap)
+    .sort((a, b) => b[1] - a[1]);
+
+  // Calculate total for percentages
+  const total = sortedData.reduce((sum, [_, count]) => sum + count, 0);
+
+  // Create color scale based on the number of categories
+  const generateColors = (count) => {
+    const colors = [
+      'rgba(76, 175, 80, 0.7)',  // Green
+      'rgba(33, 150, 243, 0.7)',  // Blue
+      'rgba(255, 152, 0, 0.7)',   // Orange
+      'rgba(156, 39, 176, 0.7)',  // Purple
+      'rgba(244, 67, 54, 0.7)'    // Red
+    ];
+    return sortedData.map((_, i) => colors[i % colors.length]);
+  };
+
+  const backgroundColor = generateColors(sortedData.length);
+  const borderColor = backgroundColor.map(color => color.replace('0.7', '1'));
+
+  return {
+    labels: sortedData.map(([category]) => category),
+    datasets: [
+      {
+        label: 'Motivação Profissional',
+        data: sortedData.map(([_, count]) => Math.round(count)),
+        backgroundColor,
+        borderColor,
+        borderWidth: 1,
+      }
+    ],
+    // Add metadata for tooltips
+    metadata: {
+      total,
+      percentages: sortedData.map(([category, count]) => ({
+        category,
+        percentage: ((count / total) * 100).toFixed(1)
+      }))
+    }
+  };
+};

@@ -3,8 +3,10 @@ import { Pie, Bar } from 'react-chartjs-2';
 import useResizeObserver from '../../hooks/useResizeObserver';
 import FishermenPercentageChart from '../charts/FishermenPercentageChart';
 import PopulationFishermenComparisonChart from '../charts/PopulationFishermenComparisonChart';
+import MotivationChart from '../charts/MotivationChart'; // Import the new component
+import { formatMotivationData } from '../../utils/dataFormatters'; // Import the new formatter
 
-// Import the new CSS file
+// Import the CSS file
 import '../../styles/components/charts.css';
 
 const ChartsSection = ({
@@ -19,6 +21,9 @@ const ChartsSection = ({
 }) => {
   const chartGridRef = useRef(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
+
+  // Format motivation data
+  const motivationData = formatMotivationData(communitiesData, windowWidth < 576);
 
   // Use resize observer to get chart container dimensions
   const dimensions = useResizeObserver(chartGridRef);
@@ -87,6 +92,22 @@ const ChartsSection = ({
           </div>
           <div className="chart-explanation">
             Proporção de pescadores em relação à população total por município
+          </div>
+        </div>
+
+        {/* New Motivation Chart */}
+        <div className="chart-card">
+          <div className="chart-card-header">
+            <h3 className="chart-title">Motivação Profissional dos Pescadores</h3>
+          </div>
+          <div className="chart-card-body">
+            <MotivationChart
+              data={motivationData}
+              windowWidth={windowWidth}
+            />
+          </div>
+          <div className="chart-explanation">
+            Principais fatores que motivam a escolha pela profissão de pescador
           </div>
         </div>
       </div>

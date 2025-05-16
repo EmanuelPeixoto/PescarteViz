@@ -170,11 +170,10 @@ const Dashboard = () => {
             fishermenDistributionData={fishermenDistributionData}
             populationByMunicipalityData={populationByMunicipalityData}
             fishermenPercentageData={fishermenPercentageData}
-            communitiesData={communitiesData} // Add this prop
+            communitiesData={communitiesData}
             pieOptions={mobilePieOptions}
             barOptions={mobileBarOptions}
             windowWidth={windowWidth}
-            getResponsiveChartOptions={getResponsiveChartOptions}
             chartColors={chartColors}
           />
         )}

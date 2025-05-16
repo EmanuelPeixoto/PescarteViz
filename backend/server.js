@@ -1883,6 +1883,77 @@ app.get('/api/analytics/regression', async (req, res) => {
   }
 });
 
+// Update the communities data endpoint (around line 1880-1905)
+app.get("/api/communities/data", async (req, res) => {
+  try {
+    const communitiesData = await pool.query(`
+      SELECT
+        c.id,
+        c.nome,
+        m.nome as municipio,
+        cc.pessoas,
+        cc.pescadores,
+        cc.familias
+      FROM
+        comunidades c
+      JOIN
+        municipios m ON c.municipio_id = m.id
+      JOIN
+        censo_comunidade cc ON c.id = cc.comunidade_id
+      WHERE
+        cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
+      ORDER BY
+        m.nome, c.nome
+    `);
+
+    // Fetch motivation data from the motivacao_profissional table
+    const motivationData = await pool.query(`
+      SELECT
+        m.nome as municipio,
+        mp.motivo,
+        mp.percentual
+      FROM
+        motivacao_profissional mp
+      JOIN
+        municipios m ON mp.municipio_id = m.id
+      WHERE
+        mp.ano_referencia = (SELECT MAX(ano_referencia) FROM motivacao_profissional)
+      ORDER BY
+        m.nome, mp.percentual DESC
+    `);
+
+    // Group motivation data by municipality
+    const motivationByMunicipality = {};
+    motivationData.rows.forEach(row => {
+      if (!motivationByMunicipality[row.municipio]) {
+        motivationByMunicipality[row.municipio] = {};
+      }
+      motivationByMunicipality[row.municipio][row.motivo] = parseFloat(row.percentual);
+    });
+
+    // Add motivation data to each community
+    const communitiesWithMotivation = communitiesData.rows.map(community => {
+      // Get motivation data for this community's municipality
+      const municipalityMotivation = motivationByMunicipality[community.municipio] || {};
+
+      // Convert to JSON string for storage in the same format as expected by the formatter
+      const motivationJson = Object.keys(municipalityMotivation).length > 0
+        ? JSON.stringify(municipalityMotivation)
+        : null;
+
+      return {
+        ...community,
+        motivacao_profissional: motivationJson
+      };
+    });
+
+    res.json(communitiesWithMotivation);
+  } catch (error) {
+    console.error("Error fetching communities data:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
