@@ -11,52 +11,57 @@ const ChartsSection = ({
   fishermenDistributionData,
   populationByMunicipalityData,
   fishermenPercentageData,
-  communitiesData,  // Add this prop for the new chart
+  communitiesData,
   pieOptions,
   barOptions,
   windowWidth,
+  chartColors
 }) => {
   const chartGridRef = useRef(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
-  
+
   // Use resize observer to get chart container dimensions
   const dimensions = useResizeObserver(chartGridRef);
-  
+
   useEffect(() => {
     if (dimensions) {
       setChartDimensions(dimensions);
     }
   }, [dimensions]);
-  
+
   // Responsive layout based on screen width
-  const layoutClasses = windowWidth < 992 
-    ? "chart-grid chart-grid-stacked" 
+  const layoutClasses = windowWidth < 992
+    ? "chart-grid chart-grid-stacked"
     : "chart-grid chart-grid-2-columns";
 
   return (
-    <div className="charts-section">
-      <div className={layoutClasses} ref={chartGridRef}>
+    <div className="charts-container">
+      {/* Top row of charts */}
+      <div className="chart-row top-charts">
         {/* Fishermen Distribution Chart */}
         <div className="chart-card">
           <div className="chart-card-header">
             <h3 className="chart-title">Distribuição de Pescadores</h3>
           </div>
           <div className="chart-card-body">
-            <Pie data={fishermenDistributionData} options={pieOptions} />
+            <Pie
+              data={fishermenDistributionData}
+              options={pieOptions}
+            />
           </div>
           <div className="chart-explanation">
             Distribuição do número total de pescadores por município
           </div>
         </div>
 
-        {/* Population Chart */}
+        {/* Population by Municipality Chart */}
         <div className="chart-card">
           <div className="chart-card-header">
             <h3 className="chart-title">População por Município</h3>
           </div>
           <div className="chart-card-body">
-            <Bar 
-              data={populationByMunicipalityData} 
+            <Bar
+              data={populationByMunicipalityData}
               options={{
                 ...barOptions,
                 maintainAspectRatio: false,
@@ -74,29 +79,14 @@ const ChartsSection = ({
             <h3 className="chart-title">Percentual de Pescadores por Município</h3>
           </div>
           <div className="chart-card-body">
-            <FishermenPercentageChart 
+            <FishermenPercentageChart
               data={fishermenPercentageData}
               windowWidth={windowWidth}
+              themeColor=" #e67e22" // PESCARTE blue
             />
           </div>
           <div className="chart-explanation">
             Proporção de pescadores em relação à população total por município
-          </div>
-        </div>
-
-        {/* New Population vs Fishermen Comparison Chart */}
-        <div className="chart-card">
-          <div className="chart-card-header">
-            <h3 className="chart-title">Comparação População/Pescadores</h3>
-          </div>
-          <div className="chart-card-body">
-            <PopulationFishermenComparisonChart 
-              communitiesData={communitiesData}
-              windowWidth={windowWidth}
-            />
-          </div>
-          <div className="chart-explanation">
-            Comparativo visual entre população total e pescadores nos municípios
           </div>
         </div>
       </div>
