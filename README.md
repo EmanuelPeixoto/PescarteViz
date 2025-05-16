@@ -1,6 +1,3 @@
-Here's the updated README.md file with improved structure, additional details, and clearer instructions:
-
-```markdown
 # PESCARTE - Visualização de Dados de Comunidades Pesqueiras
 
 Este projeto foi desenvolvido para o monitoramento e visualização de dados de comunidades pesqueiras, em parceria com o Projeto PESCARTE. A aplicação permite visualizar e analisar dados socioeconômicos das comunidades pesqueiras da Bacia de Campos e Espírito Santo, contribuindo para a gestão e tomada de decisão do projeto.
