@@ -1,99 +1,95 @@
-/* Theme utilities */
+/*
+   Theme utilities - DARK THEME DISABLED
+   All CSS styles kept for compatibility but not actively used
+*/
 
 .dark-theme {
+  /* Override with light theme values to ensure compatibility */
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
 
-/* Card and component theming */
+/* All dark theme specific styles are now mapped to light theme equivalents */
 .dark-theme .stat-card {
-  background-color: #2a3142;
+  background-color: var(--card-bg);
 }
 
-.dark-theme .analysis-section {
-  background-color: #1e2430;
-}
-
-.dark-theme .analysis-controls {
-  background-color: #1e2430;
-}
-
-.dark-theme .stat-badge {
-  background-color: #2a3142;
-}
-
+.dark-theme .analysis-section,
+.dark-theme .analysis-controls,
+.dark-theme .chart-section,
 .dark-theme .communities-controls-container,
 .dark-theme .communities-controls,
 .dark-theme .filter-panel {
-  background-color: #1e2430;
-  border-color: #444;
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
-.dark-theme .chart-section {
-  background-color: #1e2430;
+.dark-theme .stat-badge {
+  background-color: var(--bg-secondary);
 }
 
 .dark-theme .municipality-summary-card,
 .dark-theme .community-card {
-  background-color: #2a3142;
-  border-color: #444;
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
-/* Tables in dark mode */
+/* Tables in "dark mode" now use light styles */
 .dark-theme .analytics-table th {
-  background-color: #2a3142;
+  background-color: var(--bg-secondary);
 }
 
 .dark-theme .analytics-table tr:hover {
-  background-color: #2d3446;
+  background-color: var(--bg-primary);
 }
 
 .dark-theme .analytics-table td {
-  border-color: #444;
+  border-color: var(--border-color);
 }
 
 .dark-theme table th,
 .dark-theme table td {
-  border-color: #444;
+  border-color: var(--border-color);
 }
 
 .dark-theme table th {
-  background-color: #2a3142;
+  background-color: var(--bg-secondary);
 }
 
 .dark-theme table tr:hover {
-  background-color: #2d3446;
+  background-color: var(--bg-primary);
 }
 
 /* Analysis components */
 .dark-theme .analysis-interpretations {
-  background-color: #2a3142;
+  background-color: var(--bg-secondary);
 }
 
 .dark-theme .extreme-card {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--card-shadow);
 }
 
 .dark-theme .cluster-card {
-  background-color: #2a3142;
-  border-color: #444;
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
-/* Inputs in dark mode */
+/* Inputs in "dark mode" now use light styles */
 .dark-theme .styled-select,
 .dark-theme .search-input,
 .dark-theme select,
 .dark-theme input {
-  background-color: #2a3142;
-  color: #e0e0e0;
-  border-color: #444;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 .dark-theme .filter-button {
-  background-color: #1e2430;
-  border-color: #444;
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
+/* Keep light theme as is */
 .light-theme {
   background-color: var(--bg-primary);
   color: var(--text-primary);

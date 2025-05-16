@@ -34,9 +34,9 @@ function App() {
                   <NavLink to="/compare">Comparar Comunidades</NavLink>
                   <NavLink to="/analysis">Análise Avançada</NavLink>
                 </div>
-                <ThemeToggle />
               </div>
             </nav>
+            <ThemeToggle />
           </header>
           <main>
             <Suspense fallback={<div className="loading-container">Carregando...</div>}>
