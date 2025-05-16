@@ -45,7 +45,7 @@ const clusterDefinitions = {
     id: 1,
     color: '#E63946',
     label: 'Alta Dependência',
-    description: 'Acima de 30% de pescadores',
+    description: 'Acima de 45% de pescadores',
     icon: 'fa-fish',
     class: 'high'
   },
@@ -53,7 +53,7 @@ const clusterDefinitions = {
     id: 2,
     color: '#457B9D',
     label: 'Dependência Moderada',
-    description: 'Entre 15% e 30% de pescadores',
+    description: 'Entre 35% e 45% de pescadores',
     icon: 'fa-balance-scale',
     class: 'moderate'
   },
@@ -61,7 +61,7 @@ const clusterDefinitions = {
     id: 3,
     color: '#F9C74F',
     label: 'Baixa Dependência',
-    description: 'Menos de 15% de pescadores',
+    description: 'Menos de 35% de pescadores',
     icon: 'fa-chart-pie',
     class: 'low'
   }
@@ -80,9 +80,9 @@ const classifyCommunityByFishermen = (fishPercentage, communityObj = null) => {
     if (clusterLabel.includes('low')) return 'baixa';
   }
 
-  // Senão, usar a classificação por percentual
-  if (percentage > 30) return 'alta';
-  if (percentage < 15) return 'baixa';
+  // Senão, usar a classificação por percentual com os novos limiares
+  if (percentage > 45) return 'alta';
+  if (percentage < 35) return 'baixa';
   return 'moderada';
 };
 
@@ -94,7 +94,7 @@ const AdvancedAnalysis = () => {
   const [regressionData, setRegressionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [analysisType, setAnalysisType] = useState('overview');
+  const [analysisType, setAnalysisType] = useState('clusters'); // Changed from 'overview' to 'clusters'
 
   // Adicionar estados no início do componente
 
@@ -583,8 +583,8 @@ const AdvancedAnalysis = () => {
         const fishPerc = parseFloat(community.fishermen_percentage);
         let dependencyType = '';
 
-        if (fishPerc > 30) dependencyType = 'alta';
-        else if (fishPerc < 15) dependencyType = 'baixa';
+        if (fishPerc > 45) dependencyType = 'alta';
+        else if (fishPerc < 35) dependencyType = 'baixa';
         else dependencyType = 'moderada';
 
         // Converter para IDs conforme definido em clusterDefinitions
@@ -929,19 +929,17 @@ const AdvancedAnalysis = () => {
           community.community_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           community.municipality_name.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Filtro por tipo de dependência
+        // Filtro por tipo de dependência com os novos limiares
         const fishPerc = parseFloat(community.fishermen_percentage);
         let matchesFilter = true;
 
         if (activeFilter === 'high') {
-          matchesFilter = fishPerc > 30;
+          matchesFilter = fishPerc > 45;
         } else if (activeFilter === 'moderate') {
-          matchesFilter = fishPerc >= 15 && fishPerc <= 30;
+          matchesFilter = fishPerc >= 35 && fishPerc <= 45;
         } else if (activeFilter === 'low') {
-          matchesFilter = fishPerc < 15;
+          matchesFilter = fishPerc < 35;
         }
-
-        console.log(`Comunidade ${community.community_name}: fishPerc=${fishPerc}, matchesFilter=${matchesFilter}, activeFilter=${activeFilter}`);
 
         return matchesSearch && matchesFilter;
       });
@@ -1208,11 +1206,9 @@ const AdvancedAnalysis = () => {
                 onChange={handleAnalysisTypeChange}
                 className="analysis-type-select"
               >
-                <option value="overview">Visão Geral</option>
-                {/* <option value="statistics" disabled>Estatísticas (Indisponível)</option> */}
+                <option value="overview" disabled>Visão Geral (Em desenvolvimento)</option>
                 <option value="clusters">Análise de Clusters</option>
-                <option value="regression">Regressão</option>
-                {/* <option value="predictions" disabled>Predições (Indisponível)</option> */}
+                <option value="regression" disabled>Regressão (Em desenvolvimento)</option>
               </select>
             </div>
           </div>
