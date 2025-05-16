@@ -73,20 +73,12 @@ const clusterDefinitions = {
   },
 };
 
-// Função para classificar comunidades por percentual de pescadores
+// Modified classification function to prioritize percentage over pre-classification
 const classifyCommunityByFishermen = (fishPercentage, communityObj = null) => {
-  // Convertendo para número para garantir
+  // Converting to number to ensure consistent comparison
   const percentage = parseFloat(fishPercentage);
-
-  // Primeiro verificar se os dados vêm do cluster pré-classificado
-  if (communityObj && communityObj.cluster) {
-    const clusterLabel = communityObj.cluster.toLowerCase();
-    if (clusterLabel.includes("high")) return "alta";
-    if (clusterLabel.includes("moderate")) return "moderada";
-    if (clusterLabel.includes("low")) return "baixa";
-  }
-
-  // Senão, usar a classificação por percentual com os novos limiares
+  
+  // Always use percentage-based classification
   if (percentage > 45) return "alta";
   if (percentage < 35) return "baixa";
   return "moderada";
