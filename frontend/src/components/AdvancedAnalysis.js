@@ -114,7 +114,7 @@ const AdvancedAnalysis = () => {
   const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
-    document.title = 'Análise Avançada | PESCARTE';
+  //  document.title = 'Análise Avançada | PESCARTE';
 
     const fetchData = async () => {
       try {

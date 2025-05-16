@@ -220,7 +220,27 @@
   width: 100%;
 }
 
-/* Mobile responsive adjustments */
+/* Enhanced section containers */
+.chart-section-container,
+.map-section-container,
+.access-section-container {
+  margin-bottom: 48px;
+  padding-top: 16px;
+}
+
+.section-heading {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--heading-color, #0f172a);
+  margin-bottom: 8px;
+}
+
+.section-description {
+  color: var(--text-secondary, #64748b);
+  margin-bottom: 24px;
+  max-width: 800px;
+}
+
 @media (max-width: 768px) {
   .pescarte-info-header {
     flex-direction: column;
@@ -242,5 +262,20 @@
 
   .stat-card {
     padding: 1.5rem 1rem;
+  }
+
+  .chart-section-container,
+  .map-section-container,
+  .access-section-container {
+    margin-bottom: 32px;
+  }
+
+  .section-heading {
+    font-size: 20px;
+  }
+
+  .section-description {
+    font-size: 14px;
+    margin-bottom: 16px;
   }
 }

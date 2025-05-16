@@ -91,6 +91,11 @@
   padding: 0;
   width: 100%;
   overflow: visible;
+  transition: opacity 0.2s ease;
+}
+
+.chart-card:hover .responsive-chart-container {
+  opacity: 1;
 }
 
 /* Fix for Chart.js rendering issue */
@@ -216,6 +221,142 @@ canvas.chartjs-render-monitor {
   font-size: 14px;
 }
 
+/* Modern card-based chart layout */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .chart-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart-grid .full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.chart-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #edf2f7);
+  background: var(--card-header-bg, #f8fafc);
+  flex-shrink: 0;
+}
+
+/* Improved chart card body with adaptive height strategy */
+.chart-card-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 0; /* This is crucial for flex children */
+  transition: height 0.3s ease, padding 0.3s ease;
+}
+
+/* Adjust height based on chart type */
+.chart-card-body.bar-chart {
+  min-height: 280px;
+}
+
+.chart-card-body.pie-chart {
+  min-height: 320px;
+}
+
+.chart-card-body.full-width {
+  min-height: 350px;
+}
+
+/* Ensure charts have proper containment */
+.chart-card-body > div {
+  width: 100%;
+  height: 100%;
+}
+
+/* Chart view toggle styles */
+.chart-view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.toggle-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #edf2f7);
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+  background: var(--primary-color, #004c99);
+  color: white;
+  border-color: var(--primary-color, #004c99);
+}
+
+/* Chart type specific containers */
+.pie-chart-container {
+  max-height: 380px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make sure pie charts aren't stretched */
+.pie-chart-container canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Add padding around pie charts for better legend display */
+.pie-chart {
+  padding: 10px 20px;
+}
+
+/* Ensure bar charts have proper spacing */
+.bar-chart-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Full width charts need more breathing room */
+.full-width-bar-chart-container {
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+}
+
 /* Responsive adjustments */
 @media (min-width: 992px) {
   .chart-section {
@@ -277,6 +418,28 @@ canvas.chartjs-render-monitor {
     max-width: 70vw;
     white-space: normal;
   }
+
+  .chart-card-body {
+    padding: 12px;
+    min-height: 260px;
+  }
+
+  .chart-card-header {
+    padding: 12px 16px;
+  }
+
+  .chart-title {
+    font-size: 15px;
+  }
+
+  .pie-chart {
+    padding: 5px;
+  }
+
+  /* Center legends on mobile */
+  .chart-card-body .chartjs-render-monitor {
+    margin: 0 auto;
+  }
 }
 
 /* Very small screens */
@@ -288,10 +451,55 @@ canvas.chartjs-render-monitor {
   .chart-section {
     padding: 10px 8px;
   }
+
+  .chart-card-body {
+    padding: 10px;
+    min-height: 260px;
+  }
+
+  .chart-card-header {
+    padding: 12px 16px;
+  }
+
+  .chart-title {
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 400px) {
   .chart-section {
     padding: 10px 8px;
+  }
+}
+
+.chart-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: opacity 0.3s ease;
+}
+
+.chart-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 76, 153, 0.1);
+  border-radius: 50%;
+  border-top-color: #004c99;
+  animation: chart-spinner 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+.chart-loading-text {
+  color: #64748b;
+  font-size: 14px;
+}
+
+@keyframes chart-spinner {
+  to {
+    transform: rotate(360deg);
   }
 }

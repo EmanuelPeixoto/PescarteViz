@@ -21,7 +21,8 @@ import { useCommunityData } from '../hooks/useCommunityData';
 import StatsSummary from './dashboard/StatsSummary';
 import CommunityAccess from './dashboard/CommunityAccess';
 import ChartsSection from './dashboard/ChartsSection';
-import CommunityMapSection from './dashboard/CommunityMapSection'; // Add this import
+import CommunityMapSection from './dashboard/CommunityMapSection';
+import ChartLoading from './ui/ChartLoading'; // Add this import
 
 // Import utilities
 import {
@@ -29,10 +30,10 @@ import {
   formatPopulationData,
   formatPercentageData
 } from '../utils/dataFormatters';
-import { defaultBarOptions, defaultPieOptions } from '../utils/chartUtils';
+import { defaultBarOptions, defaultPieOptions, getResponsiveChartOptions } from '../utils/chartUtils'; // Add this import
 
 // Import styles
-import '../styles/pages/maps.css'; // Add this import
+import '../styles/pages/maps.css';
 
 // Register ChartJS components
 ChartJS.register(
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const { communitiesData, stats, loading, error } = useCommunityData();
   const [chartReady, setChartReady] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [chartsTransitioning, setChartsTransitioning] = useState(false); // Add this state
 
   // Update window width state
   useEffect(() => {
@@ -146,22 +148,45 @@ const Dashboard = () => {
       {/* Modular Stats Summary Component */}
       <StatsSummary stats={stats} />
 
-      {/* Modular Charts Section Component */}
-      {chartReady && (
-        <ChartsSection
-          fishermenDistributionData={fishermenDistributionData}
-          populationByMunicipalityData={populationByMunicipalityData}
-          fishermenPercentageData={fishermenPercentageData}
-          pieOptions={mobilePieOptions}
-          barOptions={mobileBarOptions}
-        />
-      )}
+      {/* Enhanced Charts Section with better loading state */}
+      <div className="chart-section-container">
+        <h2 className="section-heading">Estatísticas Visuais</h2>
+        <p className="section-description">
+          Visualize os principais indicadores das comunidades pesqueiras monitoradas pelo projeto PESCARTE.
+        </p>
 
-      {/* Add the Map Section */}
-      <CommunityMapSection />
+        {loading && !chartReady ? (
+          <ChartLoading />
+        ) : (
+          <ChartsSection
+            fishermenDistributionData={fishermenDistributionData}
+            populationByMunicipalityData={populationByMunicipalityData}
+            fishermenPercentageData={fishermenPercentageData}
+            pieOptions={mobilePieOptions}
+            barOptions={mobileBarOptions}
+            windowWidth={windowWidth}
+            getResponsiveChartOptions={getResponsiveChartOptions}
+          />
+        )}
+      </div>
 
-      {/* Modular Community Access Component */}
-      <CommunityAccess communitiesData={communitiesData} />
+      {/* Map Section with better heading */}
+      <div className="map-section-container">
+        <h2 className="section-heading">Localização Geográfica</h2>
+        <p className="section-description">
+          Explore a distribuição geográfica das comunidades pesqueiras e acesse detalhes específicos.
+        </p>
+        <CommunityMapSection />
+      </div>
+
+      {/* Access Component with heading */}
+      <div className="access-section-container">
+        <h2 className="section-heading">Acesso Rápido por Município</h2>
+        <p className="section-description">
+          Explore dados consolidados dos principais municípios e acesse comunidades específicas.
+        </p>
+        <CommunityAccess communitiesData={communitiesData} />
+      </div>
     </div>
   );
 };
