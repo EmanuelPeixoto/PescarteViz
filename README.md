@@ -279,14 +279,10 @@ data-viz-project/
 - **CommunityDetails**: Detalhes e estatísticas de comunidades específicas
 - **CommunityComparison**: Comparação de dados entre comunidades selecionadas
 - **AdvancedAnalysis**: Análises estatísticas e tendências
-- **DataUploadForm**: Interface para upload de dados
-- **FishingEnvironments**: Gestão de ambientes de pesca
-- **CommunityCoordinatesAdmin**: Interface administrativa para gestão de coordenadas geográficas
 
 ### Backend
 
 - **API RESTful**: Endpoints para acesso aos dados do banco
-- **Serviços de Upload**: Processamento de arquivos CSV para importação de dados
 - **Endpoints de Estatísticas**: Cálculo e fornecimento de estatísticas agregadas
 - **Sistema de Clustering**: Análise de agrupamentos de comunidades por características
 - **Documentação Swagger**: API autodocumentada para facilitar integração
