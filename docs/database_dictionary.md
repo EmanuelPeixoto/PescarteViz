@@ -58,6 +58,7 @@ Armazena as localidades (bairros/distritos) que pertencem a uma comunidade.
 | id | SERIAL | Identificador único | CHAVE PRIMÁRIA |
 | comunidade_id | INTEGER | Identificador da comunidade | NOT NULL, REFERENCES comunidades(id) |
 | nome | VARCHAR(100) | Nome da localidade | NOT NULL |
+| descricao | TEXT | Descrição da localidade | |
 | created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
 | updated_at | TIMESTAMP | Data e hora da última atualização | DEFAULT CURRENT_TIMESTAMP |
 
@@ -68,12 +69,18 @@ Armazena dados demográficos detalhados das comunidades.
 |--------|------|-------------|-------------|
 | id | SERIAL | Identificador único | CHAVE PRIMÁRIA |
 | comunidade_id | INTEGER | Identificador da comunidade | REFERENCES comunidades(id) |
-| faixa_etaria | VARCHAR(20) | Faixa etária (ex: "18-25", "26-35") | |
+| ano_referencia | INTEGER | Ano de referência dos dados | NOT NULL |
+| municipio_id | INTEGER | Identificador do município | REFERENCES municipios(id) |
+| categoria | VARCHAR(50) | Categoria do dado (ex: "genero", "faixa_etaria") | NOT NULL |
+| subcategoria | VARCHAR(50) | Subcategoria (ex: "Masculino", "18-25") | NOT NULL |
+| valor | DECIMAL(10,2) | Valor numérico | NOT NULL |
+| tipo_valor | VARCHAR(20) | Tipo do valor (ex: "percentual", "contagem") | DEFAULT 'percentual' |
+| faixa_etaria | VARCHAR(20) | Faixa etária | |
 | genero | VARCHAR(20) | Gênero | |
 | cor | VARCHAR(30) | Raça/Etnia | |
 | profissao | VARCHAR(100) | Profissão/ocupação | |
 | renda_mensal | DECIMAL(10,2) | Renda mensal média | |
-| quantidade | INTEGER | Número de pessoas nesta categoria | NOT NULL |
+| quantidade | INTEGER | Número de pessoas nesta categoria | |
 | created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
 | updated_at | TIMESTAMP | Data e hora da última atualização | DEFAULT CURRENT_TIMESTAMP |
 
@@ -84,7 +91,47 @@ Armazena informações sobre os ambientes de pesca.
 |--------|------|-------------|-------------|
 | id | SERIAL | Identificador único | CHAVE PRIMÁRIA |
 | nome | VARCHAR(100) | Nome do ambiente de pesca | NOT NULL |
+| tipo | VARCHAR(50) | Tipo do ambiente (mar, rio, lagoa, etc) | NOT NULL |
+| municipio_id | INTEGER | Identificador do município | REFERENCES municipios(id) |
 | descricao | TEXT | Descrição do ambiente | |
+| area_km2 | DECIMAL(10,2) | Área do ambiente em km² | |
+| created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
+| updated_at | TIMESTAMP | Data e hora da última atualização | DEFAULT CURRENT_TIMESTAMP |
+
+### atividade_pesca
+Armazena dados sobre as atividades de pesca nas comunidades.
+
+| Coluna | Tipo | Descrição | Restrições |
+|--------|------|-------------|-------------|
+| id | SERIAL | Identificador único | CHAVE PRIMÁRIA |
+| ano_referencia | INTEGER | Ano de referência | NOT NULL |
+| comunidade_id | INTEGER | Identificador da comunidade | REFERENCES comunidades(id) |
+| ambiente_id | INTEGER | Identificador do ambiente | REFERENCES ambiente_pesca(id) |
+| especie | VARCHAR(100) | Espécie pescada | |
+| petrecho | VARCHAR(100) | Equipamento de pesca utilizado | |
+| periodo_inicio | DATE | Data de início da atividade | |
+| periodo_fim | DATE | Data de término da atividade | |
+| producao_kg | DECIMAL(10,2) | Produção em quilogramas | |
+| valor_medio_kg | DECIMAL(10,2) | Valor médio por quilograma | |
+| data_source_id | INTEGER | Referência à fonte dos dados | REFERENCES data_sources(id) |
+| created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
+| updated_at | TIMESTAMP | Data e hora da última atualização | DEFAULT CURRENT_TIMESTAMP |
+
+### embarcacoes
+Armazena informações sobre as embarcações utilizadas nas comunidades.
+
+| Coluna | Tipo | Descrição | Restrições |
+|--------|------|-------------|-------------|
+| id | SERIAL | Identificador único | CHAVE PRIMÁRIA |
+| ano_referencia | INTEGER | Ano de referência | NOT NULL |
+| municipio_id | INTEGER | Identificador do município | REFERENCES municipios(id) |
+| comunidade_id | INTEGER | Identificador da comunidade | REFERENCES comunidades(id) |
+| tamanho | VARCHAR(50) | Tamanho da embarcação | NOT NULL |
+| material | VARCHAR(50) | Material de fabricação | |
+| propulsao | VARCHAR(50) | Tipo de propulsão | |
+| quantidade | INTEGER | Quantidade | NOT NULL |
+| capacidade_media | DECIMAL(10,2) | Capacidade média | |
+| data_source_id | INTEGER | Referência à fonte dos dados | REFERENCES data_sources(id) |
 | created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
 | updated_at | TIMESTAMP | Data e hora da última atualização | DEFAULT CURRENT_TIMESTAMP |
 
@@ -100,6 +147,17 @@ Registra as fontes de dados utilizadas no sistema.
 | responsible_researcher | VARCHAR(100) | Pesquisador responsável | |
 | methodology | TEXT | Metodologia utilizada | |
 | created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
+
+### comunidade_ambiente
+Tabela de junção para o relacionamento N:M entre comunidades e ambientes de pesca.
+
+| Coluna | Tipo | Descrição | Restrições |
+|--------|------|-------------|-------------|
+| comunidade_id | INTEGER | Identificador da comunidade | REFERENCES comunidades(id) |
+| ambiente_id | INTEGER | Identificador do ambiente | REFERENCES ambiente_pesca(id) |
+| percentual_utilizacao | DECIMAL(5,2) | Percentual de uso | |
+| created_at | TIMESTAMP | Data e hora de criação do registro | DEFAULT CURRENT_TIMESTAMP |
+| PRIMARY KEY | | | (comunidade_id, ambiente_id) |
 
 ## Relacionamentos
 
@@ -127,6 +185,17 @@ Registra as fontes de dados utilizadas no sistema.
 - Uma comunidade pode utilizar vários ambientes de pesca
 - Um ambiente de pesca pode ser utilizado por várias comunidades
 - Implementado através da tabela de junção `comunidade_ambiente`
+- Comportamento na exclusão: CASCADE (se uma comunidade ou ambiente for excluído, os registros associados na tabela de junção também serão)
+
+### Comunidade para Atividades de Pesca (1:N)
+- Uma comunidade pode ter várias atividades de pesca registradas
+- Implementado pela chave estrangeira `atividade_pesca.comunidade_id` referenciando `comunidades.id`
+- Comportamento na exclusão: CASCADE
+
+### Comunidade para Embarcações (1:N)
+- Uma comunidade pode ter vários tipos de embarcações
+- Implementado pela chave estrangeira `embarcacoes.comunidade_id` referenciando `comunidades.id`
+- Comportamento na exclusão: CASCADE
 
 ## Views e Consultas Importantes
 
@@ -164,85 +233,4 @@ WHERE
     OR cc.ano_referencia IS NULL
 GROUP BY
     m.id, m.nome, m.estado;
-```
-
-### comunidades_por_municipio
-Fornece um resumo das comunidades pesqueiras por município.
-
-```sql
-SELECT
-    m.id as municipio_id,
-    m.nome as municipio,
-    m.estado,
-    COUNT(DISTINCT c.id) as num_comunidades,
-    SUM(cc.pescadores) as total_pescadores,
-    SUM(cc.pessoas) as total_pessoas,
-    SUM(cc.familias) as total_familias
-FROM
-    municipios m
-LEFT JOIN
-    comunidades c ON m.id = c.municipio_id
-LEFT JOIN
-    censo_comunidade cc ON c.id = cc.comunidade_id
-WHERE
-    cc.ano_referencia = (SELECT MAX(ano_referencia) FROM censo_comunidade)
-    OR cc.ano_referencia IS NULL
-GROUP BY
-    m.id, m.nome, m.estado
-ORDER BY
-    m.nome;
-```
-
-## Índices
-
-Para otimizar o desempenho do banco de dados, os seguintes índices foram criados:
-
-```sql
-CREATE INDEX idx_comunidades_municipio_id ON comunidades(municipio_id);
-CREATE INDEX idx_localidades_comunidade_id ON localidades(comunidade_id);
-CREATE INDEX idx_censo_comunidade_id ON censo_comunidade(comunidade_id);
-CREATE INDEX idx_censo_ano ON censo_comunidade(ano_referencia);
-CREATE INDEX idx_demograficos_municipio ON demograficos(municipio_id);
-CREATE INDEX idx_demograficos_comunidade ON demograficos(comunidade_id);
-CREATE INDEX idx_demograficos_categoria ON demograficos(categoria, subcategoria);
-```
-
-## Manutenção do Banco de Dados
-
-### Importação de Dados
-
-O sistema suporta importação de dados através de arquivos CSV para as seguintes entidades:
-- Dados de censo
-- Localidades
-- Dados demográficos
-
-Para importar dados, use os endpoints da API:
-- `/api/upload/csv/census` - Importação de dados do censo
-- `/api/upload/csv/localities` - Importação de localidades
-- `/api/upload/csv/demographics` - Importação de dados demográficos
-
-### Backup e Restauração
-
-Para fazer backup do banco de dados:
-
-```bash
-pg_dump -h localhost -U admin -d datavizdb > pescarte_backup.sql
-```
-
-Para restaurar o banco de dados:
-
-```bash
-psql -h localhost -U admin -d datavizdb < pescarte_backup.sql
-```
-
-## Diagrama de Entidade-Relacionamento
-
-Um diagrama visual das tabelas e seus relacionamentos está disponível no arquivo `docs/er_diagram.png`.
-
-## Considerações de Desempenho
-
-- As consultas que envolvem múltiplas junções podem ser lentas, especialmente com grandes volumes de dados.
-- As views materializam cálculos complexos para melhorar o desempenho.
-- Os índices nas colunas frequentemente consultadas melhoram significativamente o tempo de resposta.
-
-Este documento fornece uma documentação completa e detalhada do banco de dados do PESCARTE, incluindo descrições detalhadas de todas as tabelas, relacionamentos, views importantes e considerações de desempenho. Também adicionei informações sobre índices e manutenção do banco de dados que são úteis para desenvolvedores que trabalham no projeto.
+````

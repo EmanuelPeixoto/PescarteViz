@@ -6,6 +6,7 @@ import pescarteLogoBlue from './assets/pescarte_logo.svg';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import CommunityCoordinatesAdmin from './components/admin/CommunityCoordinatesAdmin';
+import ScrollToTop from './components/ScrollToTop';
 
 // Code-split your components
 const Dashboard = lazy(() => import("./components/Dashboard"));
@@ -18,6 +19,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
+        <ScrollToTop /> {/* Adicione aqui, logo após o Router */}
         <div className="App">
           <header className="App-header">
             <nav className="main-nav">
