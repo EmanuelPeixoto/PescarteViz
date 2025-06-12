@@ -4,3 +4,4 @@ relatoroFinal.pdf
 .env
 .env.*
 frontend/certs
+frontend/package-lock.json

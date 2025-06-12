@@ -15,9 +15,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        REACT_APP_API_URL: /api
     restart: always
     ports:
-      - "8080:80"
       - "8443:443"
     depends_on:
       - backend
